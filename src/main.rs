@@ -7,7 +7,7 @@ use player::{Player, Point};
 #[macroquad::main("MyGame")]
 async fn main() {
     let mut player = Player::new(screen_width() / 2.0, 120.0);
-    const ROTATION: f32 = 0.5;
+    const ROTATION: f32 = 2.0;
 
     loop {
         clear_background(BLACK);
@@ -31,17 +31,7 @@ async fn main() {
 
         if is_mouse_button_pressed(MouseButton::Left) {
             let (mouse_x, mouse_y) = mouse_position();
-            // Calculate center of player
-            let center_x = (player.points[0].x + player.points[2].x) / 2.0;
-            let center_y = (player.points[0].y + player.points[2].y) / 2.0;
-            // Calculate offset to move player
-            let offset_x = mouse_x - center_x;
-            let offset_y = mouse_y - center_y;
-            // Move all points
-            for point in &mut player.points {
-                point.x += offset_x;
-                point.y += offset_y;
-            }
+            player.reposition(mouse_x, mouse_y);
         }
 
         render(&player);
