@@ -16,6 +16,7 @@ pub struct Player {
     pub points: [Point; 4],
     pub center: Point,
     pub rotation_deg: f32,
+    pub curr_rotation: f32,
 }
 
 impl Player {
@@ -27,6 +28,7 @@ impl Player {
             points,
             center,
             rotation_deg: 0.0,
+            curr_rotation: 0.0,
         }
     }
 
@@ -45,7 +47,8 @@ impl Player {
     pub fn rotate(&mut self, rotation_degrees: f32) {
         // Add the rotation to current rotation
         //self.rotation_deg += rotation_degrees;
-        self.rotation_deg = rotation_degrees;
+        self.curr_rotation = rotation_degrees;
+        self.rotation_deg += rotation_degrees;
 
         // Convert to radians
         let theta = self.rotation_deg * PI / 180.0;
