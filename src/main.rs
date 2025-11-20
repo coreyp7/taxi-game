@@ -2,44 +2,49 @@ use macroquad::color::*;
 use macroquad::prelude::*;
 
 mod player;
-use player::Player;
+use player::{Player, Point};
 
 #[macroquad::main("MyGame")]
 async fn main() {
-    let mut player = Player {
-        x: screen_width() / 2.0 - 60.0,
-        y: 120.0,
-        rotation_deg: 0.0,
-    };
+    let mut player = Player::new(screen_width() / 2.0, 120.0);
+    const ROTATION: f32 = 0.5;
 
     loop {
         clear_background(BLACK);
 
-        // Keyboard input
         if is_key_down(KeyCode::Left) {
             //player.x -= 2.0;
-            player.rotation_deg -= 2.0;
+            //player.rotation_deg -= 2.0;
+            player.rotate(-ROTATION);
         }
         if is_key_down(KeyCode::Right) {
             //player.x += 2.0;
-            player.rotation_deg += 2.0;
+            //player.rotation_deg += 2.0;
+            player.rotate(ROTATION);
         }
         if is_key_down(KeyCode::Up) {
-            player.y -= 2.0;
+            player.translate(0.0, -2.0);
         }
         if is_key_down(KeyCode::Down) {
-            player.y += 2.0;
+            player.translate(0.0, 2.0);
         }
 
-        // Mouse input
         if is_mouse_button_pressed(MouseButton::Left) {
             let (mouse_x, mouse_y) = mouse_position();
-            player.x = mouse_x - 30.0; // Center the rectangle on mouse
-            player.y = mouse_y - 50.0;
+            // Calculate center of player
+            let center_x = (player.points[0].x + player.points[2].x) / 2.0;
+            let center_y = (player.points[0].y + player.points[2].y) / 2.0;
+            // Calculate offset to move player
+            let offset_x = mouse_x - center_x;
+            let offset_y = mouse_y - center_y;
+            // Move all points
+            for point in &mut player.points {
+                point.x += offset_x;
+                point.y += offset_y;
+            }
         }
 
         render(&player);
-        draw_circle(player.x, player.y, 3.0, RED);
         next_frame().await
     }
 }
@@ -57,13 +62,11 @@ fn render(player: &Player) {
 }
 
 fn render_player(player: &Player) {
-    let mut params: DrawRectangleParams = DrawRectangleParams::default();
-    params.rotation = player.rotation_deg.to_radians();
-    params.color = YELLOW;
+    for i in 0..player.points.len() {
+        let current = player.points[i];
+        let next = player.points[(i + 1) % player.points.len()]; // Wrap around to first point
+        draw_line(current.x, current.y, next.x, next.y, 2.0, YELLOW);
+    }
 
-    // FIXME: get rid of magic numbers; should have player w/h defined somewhere.
-    let taxi_x = player.x - 30.0;
-    let taxi_y = player.y - 50.0;
-
-    draw_rectangle_ex(taxi_x, taxi_y, 60.0, 100.0, params);
+    draw_circle(player.center.x, player.center.y, 3.0, RED);
 }
