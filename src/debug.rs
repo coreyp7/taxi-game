@@ -1,6 +1,8 @@
 use macroquad::color::*;
 use macroquad::prelude::*;
 
+/// Just a convenient function/struct I can call when I need to add
+/// different debug text to the window easily.
 pub struct DebugRenderer {
     current_line: usize,
     font_size: f32,

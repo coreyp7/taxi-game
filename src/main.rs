@@ -6,6 +6,8 @@ mod player;
 use debug::DebugRenderer;
 use player::Player;
 
+mod math;
+
 //const PLAYER_ROTATION: f32 = 2.0;
 const PLAYER_ROTATION_SPEED: f32 = 1.2;
 const IS_DEBUG: bool = true;
@@ -21,17 +23,12 @@ async fn main() {
 
         if is_key_down(KeyCode::Up) {
             player.drive(PLAYER_SPEED);
-            //player.translate(0.0, -2.0);
-            //rotate_player_if_moving(&mut player);
             rotate_player(&mut player);
         }
         if is_key_down(KeyCode::Down) {
             player.drive(-PLAYER_SPEED);
-            //player.translate(0.0, 2.0);
-            //rotate_player_if_moving(&mut player);
             rotate_player(&mut player);
         }
-        //rotate_player(&mut player);
 
         if is_mouse_button_pressed(MouseButton::Left) {
             let (mouse_x, mouse_y) = mouse_position();
@@ -52,8 +49,6 @@ fn rotate_player(player: &mut Player) {
         //player.x += 2.0;
         //player.rotation_deg += 2.0;
         player.rotate(PLAYER_ROTATION_SPEED);
-    } else {
-        player.curr_rotation = 0.0;
     }
 }
 
@@ -79,11 +74,11 @@ fn render_debug_info(player: &Player, debug_renderer: &mut DebugRenderer) {
         "Center: ({:.1}, {:.1})",
         player.center.x, player.center.y
     ));
-    debug_renderer.add_text(&format!(
-        "Rotation this frame: {:.1}°",
-        player.curr_rotation
-    ));
-    debug_renderer.add_text(&format!("Total Rotation: {:.1}°", player.rotation_deg));
+    //debug_renderer.add_text(&format!(
+    //"Rotation this frame: {:.1}°",
+    //player.curr_rotation
+    //));
+    //debug_renderer.add_text(&format!("Total Rotation: {:.1}°", player.rotation_deg));
 
     for (i, point) in player.points.iter().enumerate() {
         debug_renderer.add_text(&format!("Point {}: ({:.1}, {:.1})", i, point.x, point.y));
