@@ -10,7 +10,7 @@ Player movement:
 Camera:
 - [x] move with Player
 - [x] try to have it moderately smooth 
-- [ ] put image in the background for testing
+- [x] put image in the background for testing
 
 Game draft:
 - [ ] What do I actually want to build?

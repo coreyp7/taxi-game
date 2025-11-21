@@ -86,4 +86,9 @@ fn render_debug_info(game_state: &GameState, camera: &Rect, debug_renderer: &mut
     for (i, point) in game_state.player.points.iter().enumerate() {
         debug_renderer.add_text(&format!("Point {}: ({:.1}, {:.1})", i, point.x, point.y));
     }
+
+    debug_renderer.add_text(&format!(
+        "player velocity: ({}, {})",
+        game_state.player.velocity.x, game_state.player.velocity.y
+    ));
 }

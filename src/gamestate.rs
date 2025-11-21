@@ -29,7 +29,7 @@ fn simulate_player(input_frame: &InputFrame, game_state: &mut GameState, delta_t
     for player_action in input_frame.player_actions.iter() {
         match player_action {
             PlayerAction::DriveForward | PlayerAction::DriveBackward => {
-                game_state.player.drive(&player_action, delta_time);
+                game_state.player.apply_force(&player_action, delta_time);
             }
             PlayerAction::TurnLeft => game_state.player.rotate(PlayerAction::TurnLeft, delta_time),
             PlayerAction::TurnRight => game_state
@@ -38,6 +38,8 @@ fn simulate_player(input_frame: &InputFrame, game_state: &mut GameState, delta_t
             PlayerAction::Reposition(x, y) => game_state.player.reposition(*x, *y),
         }
     }
+
+    game_state.player.simulate(delta_time);
 }
 
 fn update_camera_pos(camera: &mut Rect, player: &Player, delta_time: f32) {
