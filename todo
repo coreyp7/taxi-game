@@ -8,8 +8,8 @@ Player movement:
 - [ ] Taxi retains speed and drags through air, reducing speed
 
 Camera:
-- [ ] move with Player
-- [ ] try to have it moderately smooth 
+- [x] move with Player
+- [x] try to have it moderately smooth 
 - [ ] put image in the background for testing
 
 Game draft:

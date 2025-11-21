@@ -1,3 +1,5 @@
+use macroquad::math::Rect;
+
 #[derive(Debug, Clone, Copy)]
 pub struct Point {
     pub x: f32,
@@ -19,4 +21,8 @@ pub fn rotate_around_point(vertex: &mut Point, center_point: &Point, angle_radia
 
     vertex.x = x_rotated + center_point.x;
     vertex.y = y_rotated + center_point.y;
+}
+
+pub fn convert_world_pos_to_camera_pos(world_pos: &Point, camera: &Rect) -> Point {
+    Point::new(world_pos.x - camera.x, world_pos.y - camera.y)
 }
