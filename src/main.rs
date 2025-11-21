@@ -10,6 +10,7 @@ mod player;
 mod renderer;
 
 use debug::DebugRenderer;
+use gamestate::simulate;
 use gamestate::*;
 use input::*;
 use player::Player;
@@ -29,9 +30,9 @@ async fn main() {
         delta_time = get_frame_time();
         process_inputs(&mut input_frame);
 
-        update_game_state(&input_frame, &mut game_state, &mut camera, delta_time);
+        simulate(&input_frame, &mut game_state, &mut camera, delta_time);
 
-        render(&game_state, &mut debug_renderer);
+        render(&game_state, &camera, &mut debug_renderer);
 
         next_frame().await
     }

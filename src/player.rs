@@ -100,8 +100,8 @@ impl Player {
     }
 
     // Get a point some distance ahead for drawing debug vector
-    pub fn get_forward_point(&self, distance: f32) -> Point {
-        let forward_vec = self.forward_normal;
+    pub fn get_player_normal_vector_for_debug(&self, distance: f32) -> Point {
+        let forward_vec = &self.forward_normal;
         Point::new(
             self.center.x + forward_vec.x * distance,
             self.center.y + forward_vec.y * distance,
