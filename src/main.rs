@@ -1,5 +1,6 @@
 use macroquad::prelude::*;
 
+mod constants;
 mod debug;
 mod gamestate;
 mod input;

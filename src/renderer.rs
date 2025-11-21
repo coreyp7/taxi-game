@@ -1,8 +1,7 @@
+use crate::constants::IS_DEBUG;
 use crate::debug::DebugRenderer;
 use crate::gamestate::GameState;
 use macroquad::prelude::*;
-
-const IS_DEBUG: bool = true;
 
 pub fn render(game_state: &GameState, debug_renderer: &mut DebugRenderer) {
     clear_background(BLACK);

@@ -1,9 +1,7 @@
+use crate::constants::{PLAYER_ROTATION_SPEED, PLAYER_SPEED};
 use crate::math::Point;
 use crate::math::rotate_around_point;
 use std::f32::consts::PI;
-
-const PLAYER_SPEED: f32 = 5.0;
-const PLAYER_ROTATION_SPEED: f32 = 1.2;
 
 /// Aka the taxi
 pub struct Player {
