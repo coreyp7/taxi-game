@@ -14,6 +14,9 @@ impl InputFrame {
     }
 }
 
+// NOTE: this can be improved but leaving as is right now.
+// Need to improve the logic to be smart about what actions its adding to the
+// input frame (can't press left & right, etc.)
 pub fn process_inputs(input_frame: &mut InputFrame) {
     input_frame.player_actions.clear();
 

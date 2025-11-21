@@ -1,0 +1,30 @@
+List in (somewhat) priority of things to do:
+
+Delta Time / Vsync:
+- need to implement vsync and have time be consistent
+- important, especially if this is going to be a fast paced game
+
+Player movement:
+- kinetic energy; pressing the gas accelerates taxi
+- Taxi retains speed and drags through air, reducing speed
+
+Camera:
+- move with Player
+- try to have it moderately smooth 
+- put image in the background for testing
+
+Game draft:
+- What do I actually want to build?
+- What ideas do I have?
+- I need to keep the scope of this game in check. Keep it small and don't let
+- it blow up.
+
+Quadtree / polygon collision detection:
+- Big lift. Might be a lot of work.
+- If linkedlists aren't straightforward, this'll fucking suck in my head.
+- Question: Could we just brute force it? This'd be good to measure. Doing SAT 
+- collision detection will be more expensive than just AABB, so I'd imagine that 
+- SAT is desirable.
+
+
+
