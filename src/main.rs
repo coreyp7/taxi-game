@@ -7,8 +7,9 @@ use debug::DebugRenderer;
 use player::Player;
 
 //const PLAYER_ROTATION: f32 = 2.0;
-const PLAYER_ROTATION: f32 = 0.1;
+const PLAYER_ROTATION_SPEED: f32 = 1.2;
 const IS_DEBUG: bool = true;
+const PLAYER_SPEED: f32 = 5.0;
 
 #[macroquad::main("MyGame")]
 async fn main() {
@@ -18,15 +19,19 @@ async fn main() {
     loop {
         clear_background(BLACK);
 
-        rotate_player_if_moving(&mut player);
         if is_key_down(KeyCode::Up) {
-            player.translate(0.0, -2.0);
+            player.drive(PLAYER_SPEED);
+            //player.translate(0.0, -2.0);
             //rotate_player_if_moving(&mut player);
+            rotate_player(&mut player);
         }
         if is_key_down(KeyCode::Down) {
-            player.translate(0.0, 2.0);
+            player.drive(-PLAYER_SPEED);
+            //player.translate(0.0, 2.0);
             //rotate_player_if_moving(&mut player);
+            rotate_player(&mut player);
         }
+        //rotate_player(&mut player);
 
         if is_mouse_button_pressed(MouseButton::Left) {
             let (mouse_x, mouse_y) = mouse_position();
@@ -38,16 +43,17 @@ async fn main() {
     }
 }
 
-fn rotate_player_if_moving(player: &mut Player) {
+fn rotate_player(player: &mut Player) {
     if is_key_down(KeyCode::Left) {
         //player.x -= 2.0;
         //player.rotation_deg -= 2.0;
-        player.rotate(-PLAYER_ROTATION);
-    }
-    if is_key_down(KeyCode::Right) {
+        player.rotate(-PLAYER_ROTATION_SPEED);
+    } else if is_key_down(KeyCode::Right) {
         //player.x += 2.0;
         //player.rotation_deg += 2.0;
-        player.rotate(PLAYER_ROTATION);
+        player.rotate(PLAYER_ROTATION_SPEED);
+    } else {
+        player.curr_rotation = 0.0;
     }
 }
 
@@ -89,7 +95,20 @@ fn render_player(player: &Player) {
         let current = player.points[i];
         let next = player.points[(i + 1) % player.points.len()]; // Wrap around to first point
         draw_line(current.x, current.y, next.x, next.y, 2.0, YELLOW);
+        draw_circle(current.x, current.y, 3.0, RED);
     }
 
     draw_circle(player.center.x, player.center.y, 3.0, RED);
+
+    // Draw forward direction vector
+    let forward_point = player.get_forward_point(50.0);
+    draw_line(
+        player.center.x,
+        player.center.y,
+        forward_point.x,
+        forward_point.y,
+        3.0,
+        GREEN,
+    );
+    draw_circle(forward_point.x, forward_point.y, 5.0, GREEN);
 }
