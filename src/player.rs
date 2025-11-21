@@ -33,7 +33,17 @@ impl Player {
         }
     }
 
-    pub fn rotate(&mut self, rotation_degrees: f32) {
+    pub fn rotate(&mut self, player_action: PlayerAction, delta_time: f32) {
+        //rotation_degrees *= delta_time;
+        //let rotation_radians = rotation_degrees * PI / 180.0;
+        //self.rotation += rotation_radians;
+
+        let mut rotation_degrees = 0.0;
+        match player_action {
+            PlayerAction::TurnLeft => rotation_degrees = -PLAYER_ROTATION_SPEED * delta_time,
+            PlayerAction::TurnRight => rotation_degrees = PLAYER_ROTATION_SPEED * delta_time,
+            _ => (), // shouldn't happen
+        }
         let rotation_radians = rotation_degrees * PI / 180.0;
         self.rotation += rotation_radians;
 
@@ -56,9 +66,9 @@ impl Player {
         }
     }
 
-    pub fn drive(&mut self, action: &PlayerAction) {
-        let mut dx = self.forward_normal.x * PLAYER_SPEED;
-        let mut dy = self.forward_normal.y * PLAYER_SPEED;
+    pub fn drive(&mut self, action: &PlayerAction, delta_time: f32) {
+        let mut dx = self.forward_normal.x * PLAYER_SPEED * delta_time;
+        let mut dy = self.forward_normal.y * PLAYER_SPEED * delta_time;
 
         if matches!(action, PlayerAction::DriveBackward) {
             dx = -dx;

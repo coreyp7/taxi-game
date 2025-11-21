@@ -1,4 +1,5 @@
 use macroquad::prelude::*;
+use macroquad::time::{get_frame_time, get_time};
 
 mod constants;
 mod debug;
@@ -21,12 +22,15 @@ async fn main() {
     let mut game_state = GameState::new(player);
     let mut debug_renderer = DebugRenderer::new();
 
+    let mut delta_time = 0.0;
     loop {
+        delta_time = get_frame_time();
         process_inputs(&mut input_frame);
 
-        game_state.update(&input_frame);
+        game_state.update(&input_frame, delta_time);
 
         render(&game_state, &mut debug_renderer);
+
         next_frame().await
     }
 }
