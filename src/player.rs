@@ -2,6 +2,9 @@ use crate::math::Point;
 use crate::math::rotate_around_point;
 use std::f32::consts::PI;
 
+const PLAYER_SPEED: f32 = 5.0;
+const PLAYER_ROTATION_SPEED: f32 = 1.2;
+
 /// Aka the taxi
 pub struct Player {
     /// This is just a rectangle, but its treated as a polygon.
@@ -55,9 +58,15 @@ impl Player {
         }
     }
 
-    pub fn drive(&mut self, distance: f32) {
-        let dx = self.forward_normal.x * distance;
-        let dy = self.forward_normal.y * distance;
+    pub fn drive(&mut self, action: &PlayerAction) {
+        let mut dx = self.forward_normal.x * PLAYER_SPEED;
+        let mut dy = self.forward_normal.y * PLAYER_SPEED;
+
+        if matches!(action, PlayerAction::DriveBackward) {
+            dx = -dx;
+            dy = -dy;
+        }
+
         self.translate(dx, dy);
     }
 
@@ -90,4 +99,13 @@ impl Player {
             self.center.y + forward_vec.y * distance,
         )
     }
+}
+
+#[derive(Debug, Clone)]
+pub enum PlayerAction {
+    DriveForward,
+    DriveBackward,
+    TurnLeft,
+    TurnRight,
+    Reposition(f32, f32),
 }

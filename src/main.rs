@@ -4,51 +4,32 @@ use macroquad::prelude::*;
 mod debug;
 mod player;
 use debug::DebugRenderer;
-use player::Player;
+use player::*;
 
+mod input;
+use input::*;
+mod gamestate;
 mod math;
+use gamestate::*;
 
 //const PLAYER_ROTATION: f32 = 2.0;
-const PLAYER_ROTATION_SPEED: f32 = 1.2;
 const IS_DEBUG: bool = true;
-const PLAYER_SPEED: f32 = 5.0;
 
 #[macroquad::main("MyGame")]
 async fn main() {
     let mut player = Player::new(screen_width() / 2.0, 120.0);
     let mut debug_renderer = DebugRenderer::new();
+    let mut input_frame = InputFrame::new();
 
     loop {
         clear_background(BLACK);
 
-        if is_key_down(KeyCode::Up) {
-            player.drive(PLAYER_SPEED);
-            rotate_player(&mut player);
-        }
-        if is_key_down(KeyCode::Down) {
-            player.drive(-PLAYER_SPEED);
-            rotate_player(&mut player);
-        }
+        process_inputs(&mut input_frame);
 
-        if is_mouse_button_pressed(MouseButton::Left) {
-            let (mouse_x, mouse_y) = mouse_position();
-            player.reposition(mouse_x, mouse_y);
-        }
+        simulate(&mut player, &input_frame);
 
         render(&player, &mut debug_renderer);
         next_frame().await
-    }
-}
-
-fn rotate_player(player: &mut Player) {
-    if is_key_down(KeyCode::Left) {
-        //player.x -= 2.0;
-        //player.rotation_deg -= 2.0;
-        player.rotate(-PLAYER_ROTATION_SPEED);
-    } else if is_key_down(KeyCode::Right) {
-        //player.x += 2.0;
-        //player.rotation_deg += 2.0;
-        player.rotate(PLAYER_ROTATION_SPEED);
     }
 }
 
