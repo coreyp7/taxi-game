@@ -91,7 +91,7 @@ impl Player {
     pub fn simulate(&mut self, delta_time: f32) {
         let drag = 700.0;
 
-        // drag; slow car down when not accelerating.
+        // apply drag to car when velocity > 0
         if self.velocity.y > 0.0 {
             self.velocity.y -= drag * delta_time;
         } else if self.velocity.y < 0.0 {
@@ -104,13 +104,17 @@ impl Player {
             self.velocity.x += drag * delta_time;
         }
 
-        //if self.velocity.y.abs() < 25.0 {
-        //self.velocity.y = 0.0;
-        //}
-        //if self.velocity.x.abs() < 25.0 {
-        //self.velocity.x = 0.0;
-        //}
+        // If velocity is near 0, just set to 0.
+        // (Prevents buggy behavior at lower speeds)
+        if self.velocity.y.abs() < 5.0 {
+            self.velocity.y = 0.0;
+        }
+        if self.velocity.x.abs() < 5.0 {
+            self.velocity.x = 0.0;
+        }
 
+        // Apply the velocity to each of the verticies of the car
+        // in the direction the car is facing (forward_normal).
         let dx = self.forward_normal.x * self.velocity.x;
         let dy = self.forward_normal.y * self.velocity.y;
 
@@ -125,6 +129,8 @@ impl Player {
         }
     }
 
+    //FIXME: this is broken rn. Transform x y from camera relative pos
+    // to world pos.
     pub fn reposition(&mut self, x: f32, y: f32) {
         self.center.x = x;
         self.center.y = y;
