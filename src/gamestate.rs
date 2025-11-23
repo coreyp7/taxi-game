@@ -25,11 +25,13 @@ pub fn simulate(
 }
 
 fn simulate_player(input_frame: &InputFrame, game_state: &mut GameState, delta_time: f32) {
-    // Update player based on input
     for player_action in input_frame.player_actions.iter() {
         match player_action {
-            PlayerAction::DriveForward | PlayerAction::DriveBackward => {
-                game_state.player.apply_force(&player_action, delta_time);
+            PlayerAction::DriveForward => {
+                game_state.player.step_on_gas(delta_time);
+            }
+            PlayerAction::DriveBackward => {
+                game_state.player.step_on_brake(delta_time);
             }
             PlayerAction::TurnLeft => game_state.player.rotate(PlayerAction::TurnLeft, delta_time),
             PlayerAction::TurnRight => game_state

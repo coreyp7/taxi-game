@@ -66,7 +66,7 @@ impl Player {
         }
     }
 
-    pub fn apply_force(&mut self, action: &PlayerAction, delta_time: f32) {
+    pub fn step_on_gas(&mut self, delta_time: f32) {
         //self.velocity.y += 10.0;
         //self.velocity.x += 10.0;
         if self.velocity.y < PLAYER_MAX_VELOCITY {
@@ -75,12 +75,22 @@ impl Player {
         if self.velocity.x < PLAYER_MAX_VELOCITY {
             self.velocity.x += GAS_VELOCITY;
         }
+    }
 
-        // this needs to be applied in the direction of the normal vector; right?
+    pub fn step_on_brake(&mut self, delta_time: f32) {
+        //self.velocity.y += 10.0;
+        //self.velocity.x += 10.0;
+        if self.velocity.y > PLAYER_MAX_REVERSE_VELOCITY {
+            self.velocity.y -= REVERSE_VELOCITY;
+        }
+        if self.velocity.x > PLAYER_MAX_REVERSE_VELOCITY {
+            self.velocity.x -= REVERSE_VELOCITY;
+        }
     }
 
     pub fn simulate(&mut self, delta_time: f32) {
         let drag = 700.0;
+
         // drag; slow car down when not accelerating.
         if self.velocity.y > 0.0 {
             self.velocity.y -= drag * delta_time;
@@ -94,12 +104,12 @@ impl Player {
             self.velocity.x += drag * delta_time;
         }
 
-        if self.velocity.y.abs() < 25.0 {
-            self.velocity.y = 0.0;
-        }
-        if self.velocity.x.abs() < 25.0 {
-            self.velocity.x = 0.0;
-        }
+        //if self.velocity.y.abs() < 25.0 {
+        //self.velocity.y = 0.0;
+        //}
+        //if self.velocity.x.abs() < 25.0 {
+        //self.velocity.x = 0.0;
+        //}
 
         let dx = self.forward_normal.x * self.velocity.x;
         let dy = self.forward_normal.y * self.velocity.y;
