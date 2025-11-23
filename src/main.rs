@@ -16,7 +16,18 @@ use input::*;
 use player::Player;
 use renderer::render;
 
-#[macroquad::main("MyGame")]
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "Taxi Game".to_owned(),
+        //window_width: 1920,
+        //window_height: 1080,
+        //window_resizable: false,
+        fullscreen: true,
+        ..Default::default()
+    }
+}
+
+#[macroquad::main(window_conf)]
 async fn main() {
     let mut input_frame = InputFrame::new();
     // FIXME: have player instantiated in gamestate, shouldn't be here.

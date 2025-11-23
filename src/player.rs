@@ -7,7 +7,7 @@ use std::f32::consts::PI;
 pub struct Player {
     /// This is just a rectangle, but its treated as a polygon.
     /// This'll make collision detection easier later.
-    pub points: [Point; 4],
+    pub points: [Point; 8],
 
     /// Center position of the Player (which is a rect)
     pub center: Point,
@@ -24,7 +24,7 @@ pub struct Player {
 impl Player {
     pub fn new(x: f32, y: f32) -> Self {
         let center = Point::new(x, y);
-        let points = Self::create_player_vertices(&center);
+        let points = create_player_vertices(&center);
         let forward_normal = Point::new(0.0, -1.0);
         let velocity = Point::new(0.0, 0.0);
 
@@ -119,21 +119,9 @@ impl Player {
         self.center.x = x;
         self.center.y = y;
 
-        self.points = Self::create_player_vertices(&self.center);
+        self.points = create_player_vertices(&self.center);
         self.forward_normal = Point::new(0.0, -1.0);
         self.rotation = 0.0;
-    }
-
-    fn create_player_vertices(center: &Point) -> [Point; 4] {
-        let half_width = 30.0;
-        let half_height = 50.0;
-
-        [
-            Point::new(center.x - half_width, center.y - half_height), // top-left
-            Point::new(center.x + half_width, center.y - half_height), // top-right
-            Point::new(center.x + half_width, center.y + half_height), // bottom-right
-            Point::new(center.x - half_width, center.y + half_height), // bottom-left
-        ]
     }
 
     // Get a point some distance ahead for drawing debug vector
@@ -144,6 +132,47 @@ impl Player {
             self.center.y + forward_vec.y * distance,
         )
     }
+}
+
+fn create_player_vertices(center: &Point) -> [Point; 8] {
+    use crate::constants::PLAYER_SHAPE;
+
+    // Use configuration from constants module for easy editing
+    let config = &PLAYER_SHAPE;
+
+    let vertices = [
+        // Top-left corner
+        (center.x - config.half_width, center.y - config.half_height),
+        // Inner top-left
+        (
+            center.x - config.half_width + config.inner_space_w,
+            center.y - config.half_height - config.inner_space_h,
+        ),
+        // Inner top-right
+        (
+            center.x + config.half_width - config.inner_space_w,
+            center.y - config.half_height - config.inner_space_h,
+        ),
+        // Top-right corner
+        (center.x + config.half_width, center.y - config.half_height),
+        // Bottom-right corner
+        (center.x + config.half_width, center.y + config.half_height),
+        // Inner bottom-right
+        (
+            center.x + config.half_width - config.inner_space_w,
+            center.y + config.half_height + config.inner_space_h,
+        ),
+        // Inner bottom-left
+        (
+            center.x - config.half_width + config.inner_space_w,
+            center.y + config.half_height + config.inner_space_h,
+        ),
+        // Bottom-left corner
+        (center.x - config.half_width, center.y + config.half_height),
+    ];
+
+    // Convert tuples to Points
+    vertices.map(|(x, y)| Point::new(x, y))
 }
 
 #[derive(Debug, Clone)]

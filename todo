@@ -4,8 +4,10 @@ Delta Time / Vsync:
 - [x] need to implement vsync and have time be consistent
 
 Player movement:
-- [ ] kinetic energy; pressing the gas accelerates taxi
-- [ ] Taxi retains speed and drags through air, reducing speed
+- [x] kinetic energy; pressing the gas accelerates taxi
+- [x] Taxi retains speed and drags through space, reducing speed
+- [ ] advanced logic for handling reverse / break correctly.
+(reverse/brake should be different buttons)
 
 Camera:
 - [x] move with Player
