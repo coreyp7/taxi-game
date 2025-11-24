@@ -22,7 +22,7 @@ fn window_conf() -> Conf {
         //window_width: 1920,
         //window_height: 1080,
         //window_resizable: false,
-        fullscreen: true,
+        fullscreen: false,
         ..Default::default()
     }
 }

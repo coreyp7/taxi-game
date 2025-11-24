@@ -78,7 +78,7 @@ fn render_gear_indicator(game_state: &GameState) {
     let screen_width = screen_width();
     let screen_height = screen_height();
 
-    let indicator_size = 40.0;
+    let indicator_size = 60.0;
     let margin = 20.0;
     let base_x = screen_width - indicator_size - margin;
     let base_y = screen_height - (indicator_size * 2.0) - margin;
@@ -86,7 +86,7 @@ fn render_gear_indicator(game_state: &GameState) {
     let shift_mode = game_state.player.shift_mode;
 
     let drive_color = match shift_mode {
-        ShiftMode::DRIVE => Color::new(0.0, 1.0, 0.0, 1.0), // Bright green when active
+        ShiftMode::DRIVE => Color::new(0.0, 0.8, 0.0, 1.0), // Bright green when active
         ShiftMode::REVERSE => Color::new(0.0, 0.4, 0.0, 1.0), // Dark green when inactive
     };
 
@@ -97,7 +97,7 @@ fn render_gear_indicator(game_state: &GameState) {
 
     draw_rectangle(base_x, base_y, indicator_size, indicator_size, drive_color);
     draw_rectangle_lines(base_x, base_y, indicator_size, indicator_size, 2.0, WHITE);
-    draw_text("D", base_x + 12.0, base_y + 25.0, 30.0, WHITE);
+    draw_text("D", base_x + 18.0, base_y + 35.0, 40.0, WHITE);
 
     let reverse_y = base_y + indicator_size + 5.0;
     draw_rectangle(
@@ -115,7 +115,7 @@ fn render_gear_indicator(game_state: &GameState) {
         2.0,
         WHITE,
     );
-    draw_text("R", base_x + 12.0, reverse_y + 25.0, 30.0, WHITE);
+    draw_text("R", base_x + 18.0, reverse_y + 35.0, 40.0, WHITE);
 }
 
 // TODO: move this into debug module, and then call it from main.
@@ -136,6 +136,32 @@ fn render_debug_info(game_state: &GameState, camera: &Rect, debug_renderer: &mut
 
     debug_renderer.add_text(&format!(
         "player velocity: ({}, {})",
-        game_state.player.velocity.x, game_state.player.velocity.y
+        game_state.player.velocity.x.floor(),
+        game_state.player.velocity.y.floor()
+    ));
+
+    debug_renderer.add_text(&format!(
+        "ticks since switching to drive: {}",
+        game_state.player.ticks_since_switching_into_drive
+    ));
+
+    debug_renderer.add_text(&format!(
+        "ticks since activating gas: {}",
+        game_state.player.ticks_since_gas_was_activated
+    ));
+
+    debug_renderer.add_text(&format!(
+        "crazy_dash_activated_ticks: {}",
+        game_state.player.ticks_since_crazy_dash
+    ));
+
+    debug_renderer.add_text(&format!(
+        "time between drive and gas: {}",
+        game_state.player.time_between_drive_and_gas
+    ));
+
+    debug_renderer.add_text(&format!(
+        "are we crazy dashing?: {}",
+        game_state.player.is_crazy_dashing
     ));
 }

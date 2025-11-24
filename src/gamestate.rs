@@ -2,6 +2,7 @@ use crate::constants::CAMERA_SPEED;
 use crate::input::InputFrame;
 use crate::player::*;
 use macroquad::math::Rect;
+use macroquad::time::get_time;
 
 pub struct GameState {
     pub player: Player,
@@ -27,14 +28,11 @@ pub fn simulate(
 fn simulate_player(input_frame: &InputFrame, game_state: &mut GameState, delta_time: f32) {
     for player_action in input_frame.player_actions.iter() {
         match player_action {
-            //PlayerAction::Gas | PlayerAction::ShiftIntoDrive => {
-            //game_state.player.step_on_gas(delta_time);
-            //}
-            //PlayerAction::ShiftIntoReverse => {
-            //game_state.player.step_on_brake(delta_time);
-            //}
-            PlayerAction::Gas => {
-                game_state.player.is_gas_pressed = true;
+            PlayerAction::GasHeld => {
+                game_state.player.is_gas_held = true;
+            }
+            PlayerAction::GasActivated => {
+                game_state.player.ticks_since_gas_was_activated = get_time();
             }
             PlayerAction::ShiftIntoDrive => {
                 game_state.player.shift_into_drive();

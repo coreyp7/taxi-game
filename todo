@@ -19,6 +19,9 @@ Game draft:
 - [ ] What ideas do I have?
 - [ ] I need to keep the scope of this game in check. Keep it small and don't let it blow up.
 
+Mechanic Impls:
+- [ ] Add crazy dashing
+
 Quadtree / polygon collision detection:
 - [ ] Big lift. Might be a lot of work.
 - [ ] If linkedlists aren't straightforward, this'll fucking suck in my head.

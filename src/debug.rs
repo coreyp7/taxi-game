@@ -17,7 +17,7 @@ impl DebugRenderer {
     pub fn new() -> Self {
         DebugRenderer {
             current_line: 0,
-            font_size: 16.0,
+            font_size: 26.0,
             line_height: 20.0,
             start_y: 80.0,
             x: 20.0,

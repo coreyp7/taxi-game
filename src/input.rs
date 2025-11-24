@@ -1,4 +1,5 @@
 use crate::player::PlayerAction;
+use macroquad::input::is_key_pressed;
 use macroquad::input::*;
 
 //use macroquad:#[derive(Debug, Clone)]
@@ -24,7 +25,7 @@ pub fn process_inputs(input_frame: &mut InputFrame) {
     let key_mappings = [
         (KeyCode::Up, PlayerAction::ShiftIntoDrive),
         (KeyCode::Down, PlayerAction::ShiftIntoReverse),
-        (KeyCode::Space, PlayerAction::Gas),
+        (KeyCode::Space, PlayerAction::GasHeld),
         (KeyCode::Left, PlayerAction::TurnLeft),
         (KeyCode::Right, PlayerAction::TurnRight),
     ];
@@ -36,11 +37,17 @@ pub fn process_inputs(input_frame: &mut InputFrame) {
         }
     }
 
-    // Handle mouse input separately since it has parameters
-    if is_mouse_button_pressed(MouseButton::Left) {
-        let (mouse_x, mouse_y) = mouse_position();
-        input_frame
-            .player_actions
-            .push(PlayerAction::Reposition(mouse_x, mouse_y));
+    // For crazy dashing
+    if is_key_pressed(KeyCode::Space) {
+        input_frame.player_actions.push(PlayerAction::GasActivated);
     }
+
+    // NOTE: leaving commented out bc its broken.
+    // Need to update it to relocate relative to camera pos.
+    //if is_mouse_button_pressed(MouseButton::Left) {
+    //let (mouse_x, mouse_y) = mouse_position();
+    //input_frame
+    //.player_actions
+    //.push(PlayerAction::Reposition(mouse_x, mouse_y));
+    //}
 }

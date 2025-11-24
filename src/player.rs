@@ -1,6 +1,7 @@
 use crate::constants::*;
 use crate::math::Point;
 use crate::math::rotate_around_point;
+use macroquad::time::get_time;
 use std::f32::consts::PI;
 
 /// Aka the taxi
@@ -22,7 +23,17 @@ pub struct Player {
 
     pub shift_mode: ShiftMode,
 
-    pub is_gas_pressed: bool,
+    pub is_gas_held: bool,
+
+    pub ticks_since_switching_into_drive: f64,
+
+    pub ticks_since_gas_was_activated: f64,
+
+    pub ticks_since_crazy_dash: f64,
+
+    pub time_between_drive_and_gas: f64,
+
+    pub is_crazy_dashing: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -45,7 +56,12 @@ impl Player {
             rotation: 0.0,
             velocity,
             shift_mode: ShiftMode::DRIVE,
-            is_gas_pressed: false,
+            is_gas_held: false,
+            ticks_since_switching_into_drive: 0.0,
+            ticks_since_gas_was_activated: 0.0,
+            ticks_since_crazy_dash: 0.0,
+            time_between_drive_and_gas: 0.0,
+            is_crazy_dashing: false,
         }
     }
 
@@ -68,29 +84,25 @@ impl Player {
         }
     }
 
-    //pub fn step_on_gas(&mut self, delta_time: f32) {
-    ////self.velocity.y += 10.0;
-    ////self.velocity.x += 10.0;
-    //if self.velocity.y < PLAYER_MAX_VELOCITY {
-    //self.velocity.y += GAS_VELOCITY;
-    //}
-    //if self.velocity.x < PLAYER_MAX_VELOCITY {
-    //self.velocity.x += GAS_VELOCITY;
-    //}
-    //}
-
-    //pub fn step_on_brake(&mut self, delta_time: f32) {
-    ////self.velocity.y += 10.0;
-    ////self.velocity.x += 10.0;
-    //if self.velocity.y > PLAYER_MAX_REVERSE_VELOCITY {
-    //self.velocity.y -= REVERSE_VELOCITY;
-    //}
-    //if self.velocity.x > PLAYER_MAX_REVERSE_VELOCITY {
-    //self.velocity.x -= REVERSE_VELOCITY;
-    //}
-    //}
-
     pub fn apply_gas(&mut self) {
+        //let time_between_drive_and_gas =
+        //self.ticks_since_gas_was_activated - self.ticks_since_switching_into_drive;
+
+        //self.time_between_drive_and_gas = time_between_drive_and_gas;
+
+        //let activate_crazy_dash = (0.04..0.08).contains(&time_between_drive_and_gas);
+        //let are_mid_crazy_dash =
+        //self.ticks_since_crazy_dash != 0.0 && self.ticks_since_crazy_dash < 300.0;
+
+        //if (activate_crazy_dash || are_mid_crazy_dash) {
+        if self.is_crazy_dashing {
+            //if (activate_crazy_dash) {
+            //self.ticks_since_crazy_dash = get_time();
+            self.velocity.x += GAS_VELOCITY;
+            self.velocity.y += GAS_VELOCITY;
+            return;
+        }
+        self.is_crazy_dashing = false;
         match self.shift_mode {
             ShiftMode::DRIVE => {
                 if self.velocity.y < PLAYER_MAX_VELOCITY {
@@ -113,6 +125,14 @@ impl Player {
 
     pub fn simulate(&mut self, delta_time: f32) {
         let drag = 700.0;
+
+        self.update_crazy_dash_status();
+
+        // if we've been crazy dashing for too long (its ending), then switch
+        // our crazy dashing status.
+        if (get_time() - self.ticks_since_crazy_dash > 0.3) {
+            self.is_crazy_dashing = false;
+        }
 
         // apply drag to car when velocity > 0
         if self.velocity.y > 0.0 {
@@ -137,7 +157,7 @@ impl Player {
         }
 
         // Apply velocity if gas is held (either drive or reverse)
-        if self.is_gas_pressed {
+        if self.is_gas_held {
             self.apply_gas(); // TODO: this could be named better.
         }
 
@@ -157,10 +177,16 @@ impl Player {
         }
 
         // this will be set to true again before simulate is ran in the next frame.
-        self.is_gas_pressed = false;
+        self.is_gas_held = false;
     }
 
     pub fn shift_into_drive(&mut self) {
+        if self.shift_mode == ShiftMode::REVERSE {
+            // delimiter cut; mark the time of the switch for use to detect
+            // crazy dashes.
+            self.ticks_since_switching_into_drive = get_time();
+        }
+
         self.shift_mode = ShiftMode::DRIVE;
     }
 
@@ -195,6 +221,31 @@ impl Player {
         for point in &mut self.points {
             point.x += x;
             point.y += y;
+        }
+    }
+
+    fn update_crazy_dash_status(&mut self) {
+        // update our crazy dash status; gas function will obtain status of
+        // crazy dash from state of object.
+        if get_time() - self.ticks_since_gas_was_activated > 1.0 {
+            self.is_crazy_dashing = false;
+            return;
+        }
+
+        let time_between_drive_and_gas =
+            self.ticks_since_gas_was_activated - self.ticks_since_switching_into_drive;
+
+        self.time_between_drive_and_gas = time_between_drive_and_gas;
+
+        let activate_crazy_dash = (0.04..0.08).contains(&time_between_drive_and_gas);
+        let are_mid_crazy_dash =
+            self.ticks_since_crazy_dash != 0.0 && self.ticks_since_crazy_dash < 1.0;
+
+        if activate_crazy_dash || are_mid_crazy_dash {
+            if activate_crazy_dash {
+                self.ticks_since_crazy_dash = get_time();
+            }
+            self.is_crazy_dashing = true;
         }
     }
 }
@@ -242,7 +293,8 @@ fn create_player_vertices(center: &Point) -> [Point; 8] {
 
 #[derive(Debug, Clone)]
 pub enum PlayerAction {
-    Gas,
+    GasHeld,
+    GasActivated,
     ShiftIntoDrive,
     ShiftIntoReverse,
     TurnLeft,
