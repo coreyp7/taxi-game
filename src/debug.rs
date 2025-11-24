@@ -5,12 +5,19 @@ use macroquad::prelude::*;
 /// Just a convenient function/struct I can call when I need to add
 /// different debug text to the window easily.
 pub struct DebugRenderer {
+    // top left display
     current_line: usize,
     font_size: f32,
     line_height: f32,
     start_y: f32,
     x: f32,
     color: Color,
+    // top right constant display
+    current_constant_line: usize,
+    constant_font_size: f32,
+    constant_line_height: f32,
+    constant_start_y: f32,
+    constant_color: Color,
 }
 
 impl DebugRenderer {
@@ -22,11 +29,17 @@ impl DebugRenderer {
             start_y: 80.0,
             x: 20.0,
             color: GREEN,
+            current_constant_line: 0,
+            constant_font_size: 20.0,
+            constant_line_height: 18.0,
+            constant_start_y: 10.0,
+            constant_color: YELLOW,
         }
     }
 
     pub fn reset(&mut self) {
         self.current_line = 0;
+        self.current_constant_line = 0;
     }
 
     pub fn add_text(&mut self, text: &str) {
@@ -39,12 +52,32 @@ impl DebugRenderer {
         );
         self.current_line += 1;
     }
+
+    pub fn add_constant(&mut self, text: &str) {
+        // Measure the text to get its actual width for proper right alignment
+        let text_dimensions = measure_text(text, None, self.constant_font_size as u16, 1.0);
+        let text_width = text_dimensions.width;
+        
+        // Right margin from the edge of the screen
+        let right_margin = 20.0;
+        // Calculate x position for right alignment
+        let x_pos = screen_width() - text_width - right_margin;
+
+        draw_text(
+            text,
+            x_pos,
+            self.constant_start_y + self.constant_line_height * self.current_constant_line as f32,
+            self.constant_font_size,
+            self.constant_color,
+        );
+        self.current_constant_line += 1;
+    }
 }
 
 pub fn render_grid(camera: &Rect) {
     let grid_size = 100.0;
 
-    // Get start/end of camera box
+    // Get start/end of camera rect
     let start_x = (camera.x / grid_size).floor() * grid_size;
     let start_y = (camera.y / grid_size).floor() * grid_size;
     let end_x = start_x + camera.w + grid_size;

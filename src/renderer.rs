@@ -1,4 +1,8 @@
-use crate::constants::IS_DEBUG;
+use crate::constants::{
+    CAMERA_SPEED, CAR_DRAG, CRAZY_DASH_LENGTH, CRAZY_DASH_MAX_VELOCITY, CRAZY_DASH_VELOCITY,
+    GAS_VELOCITY, IS_DEBUG, PLAYER_MAX_REVERSE_VELOCITY, PLAYER_MAX_VELOCITY,
+    PLAYER_ROTATION_SPEED, REVERSE_VELOCITY,
+};
 use crate::debug::{DebugRenderer, render_grid};
 use crate::gamestate::GameState;
 use crate::math::convert_world_pos_to_camera_pos;
@@ -7,6 +11,7 @@ use macroquad::prelude::*;
 
 pub fn render(game_state: &GameState, camera: &Rect, debug_renderer: &mut DebugRenderer) {
     clear_background(BLACK);
+
     // Kept separate from debug info since it should be under everything else.
     if IS_DEBUG {
         render_grid(camera);
@@ -122,6 +127,21 @@ fn render_gear_indicator(game_state: &GameState) {
 // Would that makes sense? Just wnat to be able to access delta time, etc
 fn render_debug_info(game_state: &GameState, camera: &Rect, debug_renderer: &mut DebugRenderer) {
     debug_renderer.reset();
+
+    // Add constants to top-right corner
+    debug_renderer.add_constant(&format!("GAS_VELOCITY: {}", GAS_VELOCITY));
+    debug_renderer.add_constant(&format!("CRAZY_DASH_VELOCITY: {}", CRAZY_DASH_VELOCITY));
+    debug_renderer.add_constant(&format!("REVERSE_VELOCITY: {}", REVERSE_VELOCITY));
+    debug_renderer.add_constant(&format!("DASH_LENGTH: {}", CRAZY_DASH_LENGTH));
+    debug_renderer.add_constant(&format!("DASH_MAX_VELOCITY: {}", CRAZY_DASH_MAX_VELOCITY));
+    debug_renderer.add_constant(&format!("MAX_VELOCITY: {}", PLAYER_MAX_VELOCITY));
+    debug_renderer.add_constant(&format!(
+        "MAX_REV_VELOCITY: {}",
+        PLAYER_MAX_REVERSE_VELOCITY
+    ));
+    debug_renderer.add_constant(&format!("ROTATION_SPEED: {}", PLAYER_ROTATION_SPEED));
+    debug_renderer.add_constant(&format!("CAR_DRAG: {}", CAR_DRAG));
+    debug_renderer.add_constant(&format!("CAMERA_SPEED: {}", CAMERA_SPEED));
 
     debug_renderer.add_text(&format!(
         "Player Center: ({:.1}, {:.1})",
