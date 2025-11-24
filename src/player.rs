@@ -25,7 +25,8 @@ pub struct Player {
     pub is_gas_pressed: bool,
 }
 
-enum ShiftMode {
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ShiftMode {
     DRIVE,
     REVERSE,
 }

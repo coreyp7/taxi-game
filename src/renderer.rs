@@ -2,6 +2,7 @@ use crate::constants::IS_DEBUG;
 use crate::debug::{DebugRenderer, render_grid};
 use crate::gamestate::GameState;
 use crate::math::convert_world_pos_to_camera_pos;
+use crate::player::ShiftMode;
 use macroquad::prelude::*;
 
 pub fn render(game_state: &GameState, camera: &Rect, debug_renderer: &mut DebugRenderer) {
@@ -12,7 +13,7 @@ pub fn render(game_state: &GameState, camera: &Rect, debug_renderer: &mut DebugR
     }
 
     render_player(&game_state.player, camera);
-    render_ui();
+    render_ui(game_state);
 
     if IS_DEBUG {
         render_debug_info(game_state, camera, debug_renderer);
@@ -60,7 +61,7 @@ fn render_player(player: &crate::player::Player, camera: &Rect) {
     draw_circle(player_normal.x, player_normal.y, 5.0, GREEN);
 }
 
-fn render_ui() {
+fn render_ui(game_state: &GameState) {
     draw_text("Hello, taxi!", 20.0, 20.0, 30.0, WHITE);
     draw_text(
         "Arrow keys to move, click to teleport",
@@ -69,6 +70,52 @@ fn render_ui() {
         20.0,
         WHITE,
     );
+
+    render_gear_indicator(game_state);
+}
+
+fn render_gear_indicator(game_state: &GameState) {
+    let screen_width = screen_width();
+    let screen_height = screen_height();
+
+    let indicator_size = 40.0;
+    let margin = 20.0;
+    let base_x = screen_width - indicator_size - margin;
+    let base_y = screen_height - (indicator_size * 2.0) - margin;
+
+    let shift_mode = game_state.player.shift_mode;
+
+    let drive_color = match shift_mode {
+        ShiftMode::DRIVE => Color::new(0.0, 1.0, 0.0, 1.0), // Bright green when active
+        ShiftMode::REVERSE => Color::new(0.0, 0.4, 0.0, 1.0), // Dark green when inactive
+    };
+
+    let reverse_color = match shift_mode {
+        ShiftMode::REVERSE => Color::new(1.0, 0.0, 0.0, 1.0), // Bright red when active
+        ShiftMode::DRIVE => Color::new(0.4, 0.0, 0.0, 1.0),   // Dark red when inactive
+    };
+
+    draw_rectangle(base_x, base_y, indicator_size, indicator_size, drive_color);
+    draw_rectangle_lines(base_x, base_y, indicator_size, indicator_size, 2.0, WHITE);
+    draw_text("D", base_x + 12.0, base_y + 25.0, 30.0, WHITE);
+
+    let reverse_y = base_y + indicator_size + 5.0;
+    draw_rectangle(
+        base_x,
+        reverse_y,
+        indicator_size,
+        indicator_size,
+        reverse_color,
+    );
+    draw_rectangle_lines(
+        base_x,
+        reverse_y,
+        indicator_size,
+        indicator_size,
+        2.0,
+        WHITE,
+    );
+    draw_text("R", base_x + 12.0, reverse_y + 25.0, 30.0, WHITE);
 }
 
 // TODO: move this into debug module, and then call it from main.
@@ -83,9 +130,9 @@ fn render_debug_info(game_state: &GameState, camera: &Rect, debug_renderer: &mut
 
     debug_renderer.add_text(&format!("Camera: ({:.1}, {:.1})", camera.x, camera.y));
 
-    for (i, point) in game_state.player.points.iter().enumerate() {
-        debug_renderer.add_text(&format!("Point {}: ({:.1}, {:.1})", i, point.x, point.y));
-    }
+    //for (i, point) in game_state.player.points.iter().enumerate() {
+    //debug_renderer.add_text(&format!("Point {}: ({:.1}, {:.1})", i, point.x, point.y));
+    //}
 
     debug_renderer.add_text(&format!(
         "player velocity: ({}, {})",
