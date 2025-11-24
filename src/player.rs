@@ -86,9 +86,10 @@ impl Player {
 
     pub fn apply_gas(&mut self) {
         // If mid crazy dash, apply velocity with no limits.
-        if self.is_crazy_dashing {
+        if self.is_crazy_dashing && self.velocity.y < CRAZY_DASH_MAX_VELOCITY {
             //self.velocity.x += GAS_VELOCITY;
             //self.velocity.y += GAS_VELOCITY;
+
             self.velocity.x += CRAZY_DASH_VELOCITY;
             self.velocity.y += CRAZY_DASH_VELOCITY;
             return;
@@ -115,9 +116,10 @@ impl Player {
     }
 
     pub fn simulate(&mut self, delta_time: f32) {
-        let drag = 700.0;
-
         self.update_crazy_dash_status();
+
+        let drag = CAR_DRAG;
+        if self.is_crazy_dashing {}
 
         // apply drag to car when velocity > 0
         if self.velocity.y > 0.0 {
@@ -134,10 +136,16 @@ impl Player {
 
         // If velocity is near 0, just set to 0.
         // (Prevents buggy behavior at lower speeds)
-        if self.velocity.y.abs() < 5.0 {
+        //if self.velocity.y.abs() < 5.0 {
+        //self.velocity.y = 0.0;
+        //}
+        //if self.velocity.x.abs() < 5.0 {
+        //self.velocity.x = 0.0;
+        //}
+        if self.velocity.y.abs() < 2.5 {
             self.velocity.y = 0.0;
         }
-        if self.velocity.x.abs() < 5.0 {
+        if self.velocity.x.abs() < 2.5 {
             self.velocity.x = 0.0;
         }
 

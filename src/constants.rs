@@ -1,11 +1,16 @@
-pub const PLAYER_SPEED: f32 = 750.0;
-pub const GAS_VELOCITY: f32 = 15.0;
+pub const GAS_VELOCITY: f32 = 8.0;
 pub const CRAZY_DASH_VELOCITY: f32 = 30.0;
 pub const REVERSE_VELOCITY: f32 = 20.0;
 pub const PLAYER_MAX_VELOCITY: f32 = 750.0;
+//pub const PLAYER_MAX_VELOCITY: f32 = 500.0;
 pub const PLAYER_MAX_REVERSE_VELOCITY: f32 = -350.0;
 pub const PLAYER_ROTATION_SPEED: f32 = 125.0;
 pub const CRAZY_DASH_LENGTH: f64 = 0.3;
+pub const CRAZY_DASH_MAX_VELOCITY: f32 = 2300.0;
+
+//pub const CAR_DRAG: f32 = 700.0;
+pub const CAR_DRAG: f32 = 500.0;
+//pub const CRAZY_DASH_DRAG: f32 = 600.0;
 
 //pub const CAMERA_SPEED: f32 = 2.5;
 pub const CAMERA_SPEED: f32 = 7.5;
