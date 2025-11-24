@@ -2,15 +2,25 @@ use crate::player::PlayerAction;
 use macroquad::input::is_key_pressed;
 use macroquad::input::*;
 
+#[derive(Debug, Clone)]
+pub enum DebugAction {
+    ToggleText,
+    ToggleConstants,
+    ToggleGrid,
+    ToggleCrazyDashIndicator,
+}
+
 //use macroquad:#[derive(Debug, Clone)]
 pub struct InputFrame {
     pub player_actions: Vec<PlayerAction>,
+    pub debug_actions: Vec<DebugAction>,
 }
 
 impl InputFrame {
     pub fn new() -> Self {
         Self {
             player_actions: Vec::new(),
+            debug_actions: Vec::new(),
         }
     }
 }
@@ -20,6 +30,7 @@ impl InputFrame {
 // input frame (can't press left & right, etc.)
 pub fn process_inputs(input_frame: &mut InputFrame) {
     input_frame.player_actions.clear();
+    input_frame.debug_actions.clear();
 
     // Define key mappings
     let key_mappings = [
@@ -37,17 +48,21 @@ pub fn process_inputs(input_frame: &mut InputFrame) {
         }
     }
 
-    // For crazy dashing
+    // Specifically for crazy dashing
     if is_key_pressed(KeyCode::Space) {
         input_frame.player_actions.push(PlayerAction::GasActivated);
     }
 
-    // NOTE: leaving commented out bc its broken.
-    // Need to update it to relocate relative to camera pos.
-    //if is_mouse_button_pressed(MouseButton::Left) {
-    //let (mouse_x, mouse_y) = mouse_position();
-    //input_frame
-    //.player_actions
-    //.push(PlayerAction::Reposition(mouse_x, mouse_y));
-    //}
+    // convenient toggles for debug info
+    let debug_key_mappings = [
+        (KeyCode::Key1, DebugAction::ToggleText),
+        (KeyCode::Key2, DebugAction::ToggleConstants),
+        (KeyCode::Key3, DebugAction::ToggleCrazyDashIndicator),
+    ];
+
+    for (key, action) in debug_key_mappings {
+        if is_key_pressed(key) {
+            input_frame.debug_actions.push(action);
+        }
+    }
 }

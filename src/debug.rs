@@ -2,9 +2,46 @@ use crate::math::{Point, convert_world_pos_to_camera_pos};
 use macroquad::color::*;
 use macroquad::prelude::*;
 
+/// this is really extra but it works
+#[derive(Clone, Copy)]
+pub struct DebugState {
+    pub show_text: bool,
+    pub show_constants: bool,
+    pub show_grid: bool,
+    pub show_crazy_dash_indicator: bool,
+}
+
+impl DebugState {
+    pub fn new() -> Self {
+        Self {
+            show_text: true,
+            show_constants: true,
+            show_grid: true,
+            show_crazy_dash_indicator: true,
+        }
+    }
+
+    pub fn toggle_text(&mut self) {
+        self.show_text = !self.show_text;
+    }
+
+    pub fn toggle_constants(&mut self) {
+        self.show_constants = !self.show_constants;
+    }
+
+    pub fn toggle_grid(&mut self) {
+        self.show_grid = !self.show_grid;
+    }
+
+    pub fn toggle_crazy_dash_indicator(&mut self) {
+        self.show_crazy_dash_indicator = !self.show_crazy_dash_indicator;
+    }
+}
+
 /// Just a convenient function/struct I can call when I need to add
 /// different debug text to the window easily.
 pub struct DebugRenderer {
+    pub debug_state: DebugState,
     // top left display
     current_line: usize,
     font_size: f32,
@@ -23,6 +60,7 @@ pub struct DebugRenderer {
 impl DebugRenderer {
     pub fn new() -> Self {
         DebugRenderer {
+            debug_state: DebugState::new(),
             current_line: 0,
             font_size: 26.0,
             line_height: 20.0,
@@ -42,7 +80,27 @@ impl DebugRenderer {
         self.current_constant_line = 0;
     }
 
+    pub fn toggle_text(&mut self) {
+        self.debug_state.toggle_text();
+    }
+
+    pub fn toggle_constants(&mut self) {
+        self.debug_state.toggle_constants();
+    }
+
+    pub fn toggle_grid(&mut self) {
+        self.debug_state.toggle_grid();
+    }
+
+    pub fn toggle_crazy_dash_indicator(&mut self) {
+        self.debug_state.toggle_crazy_dash_indicator();
+    }
+
     pub fn add_text(&mut self, text: &str) {
+        if !self.debug_state.show_text {
+            return;
+        }
+
         draw_text(
             text,
             self.x,
@@ -54,10 +112,14 @@ impl DebugRenderer {
     }
 
     pub fn add_constant(&mut self, text: &str) {
+        if !self.debug_state.show_constants {
+            return;
+        }
+
         // Measure the text to get its actual width for proper right alignment
         let text_dimensions = measure_text(text, None, self.constant_font_size as u16, 1.0);
         let text_width = text_dimensions.width;
-        
+
         // Right margin from the edge of the screen
         let right_margin = 20.0;
         // Calculate x position for right alignment

@@ -148,35 +148,34 @@ fn render_debug_info(game_state: &GameState, camera: &Rect, debug_renderer: &mut
         game_state.player.center.x, game_state.player.center.y
     ));
 
-    debug_renderer.add_text(&format!("Camera: ({:.1}, {:.1})", camera.x, camera.y));
+    //debug_renderer.add_text(&format!("Camera: ({:.1}, {:.1})", camera.x, camera.y));
 
     //for (i, point) in game_state.player.points.iter().enumerate() {
     //debug_renderer.add_text(&format!("Point {}: ({:.1}, {:.1})", i, point.x, point.y));
     //}
 
     debug_renderer.add_text(&format!(
-        "player velocity: ({}, {})",
-        game_state.player.velocity.x.floor(),
-        game_state.player.velocity.y.floor()
+        "player velocity: ({:.2}, {:.2})",
+        game_state.player.velocity.x, game_state.player.velocity.y
     ));
 
     debug_renderer.add_text(&format!(
-        "ticks since switching to drive: {}",
-        game_state.player.ticks_since_switching_into_drive
+        "ticks since switching to drive: {:.2}",
+        game_state.player.ticks_since_switching_into_drive.floor()
     ));
 
     debug_renderer.add_text(&format!(
-        "ticks since activating gas: {}",
+        "ticks since activating gas: {:.2}",
         game_state.player.ticks_since_gas_was_activated
     ));
 
     debug_renderer.add_text(&format!(
-        "crazy dash end time: {}",
+        "crazy dash end time: {:.2}",
         game_state.player.ticks_to_curr_crazy_dash_end
     ));
 
     debug_renderer.add_text(&format!(
-        "time between drive and gas: {}",
+        "time between drive and gas: {:.2}",
         game_state.player.time_between_drive_and_gas
     ));
 
@@ -184,4 +183,28 @@ fn render_debug_info(game_state: &GameState, camera: &Rect, debug_renderer: &mut
         "are we crazy dashing?: {}",
         game_state.player.is_crazy_dashing
     ));
+
+    // Crazy dash visual indicator - flashing blue square
+    if game_state.player.is_crazy_dashing && debug_renderer.debug_state.show_crazy_dash_indicator {
+        //let flash_intensity = ((get_time() * 10.0).sin() * 0.5 + 0.5) as f32; // Flash between 0 and 1
+        let blue_color = Color::new(0.0, 0.5, 1.0, 1.0);
+
+        let indicator_size = 30.0;
+        let margin = 20.0;
+        draw_rectangle(
+            margin,
+            screen_height() - indicator_size - margin,
+            indicator_size,
+            indicator_size,
+            blue_color,
+        );
+        draw_rectangle_lines(
+            margin,
+            screen_height() - indicator_size - margin,
+            indicator_size,
+            indicator_size,
+            2.0,
+            WHITE,
+        );
+    }
 }

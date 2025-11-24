@@ -22,7 +22,6 @@ pub fn simulate(
     delta_time: f32,
 ) {
     simulate_player(input_frame, game_state, delta_time);
-
     update_camera_pos(camera, &game_state.player, delta_time);
 }
 

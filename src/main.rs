@@ -40,6 +40,16 @@ async fn main() {
         let delta_time = get_frame_time();
         process_inputs(&mut input_frame);
 
+        // Process debug toggles
+        for debug_action in input_frame.debug_actions.iter() {
+            match debug_action {
+                input::DebugAction::ToggleText => debug_renderer.toggle_text(),
+                input::DebugAction::ToggleConstants => debug_renderer.toggle_constants(),
+                input::DebugAction::ToggleGrid => debug_renderer.toggle_grid(),
+                input::DebugAction::ToggleCrazyDashIndicator => debug_renderer.toggle_crazy_dash_indicator(),
+            }
+        }
+
         simulate(&input_frame, &mut game_state, &mut camera, delta_time);
 
         render(&game_state, &camera, &mut debug_renderer);
