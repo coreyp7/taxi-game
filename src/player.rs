@@ -29,7 +29,7 @@ pub struct Player {
 
     pub ticks_since_gas_was_activated: f64,
 
-    pub ticks_since_crazy_dash: f64,
+    pub ticks_to_curr_crazy_dash_end: f64,
 
     pub time_between_drive_and_gas: f64,
 
@@ -59,7 +59,7 @@ impl Player {
             is_gas_held: false,
             ticks_since_switching_into_drive: 0.0,
             ticks_since_gas_was_activated: 0.0,
-            ticks_since_crazy_dash: 0.0,
+            ticks_to_curr_crazy_dash_end: 0.0,
             time_between_drive_and_gas: 0.0,
             is_crazy_dashing: false,
         }
@@ -85,21 +85,12 @@ impl Player {
     }
 
     pub fn apply_gas(&mut self) {
-        //let time_between_drive_and_gas =
-        //self.ticks_since_gas_was_activated - self.ticks_since_switching_into_drive;
-
-        //self.time_between_drive_and_gas = time_between_drive_and_gas;
-
-        //let activate_crazy_dash = (0.04..0.08).contains(&time_between_drive_and_gas);
-        //let are_mid_crazy_dash =
-        //self.ticks_since_crazy_dash != 0.0 && self.ticks_since_crazy_dash < 300.0;
-
-        //if (activate_crazy_dash || are_mid_crazy_dash) {
+        // If mid crazy dash, apply velocity with no limits.
         if self.is_crazy_dashing {
-            //if (activate_crazy_dash) {
-            //self.ticks_since_crazy_dash = get_time();
-            self.velocity.x += GAS_VELOCITY;
-            self.velocity.y += GAS_VELOCITY;
+            //self.velocity.x += GAS_VELOCITY;
+            //self.velocity.y += GAS_VELOCITY;
+            self.velocity.x += CRAZY_DASH_VELOCITY;
+            self.velocity.y += CRAZY_DASH_VELOCITY;
             return;
         }
         self.is_crazy_dashing = false;
@@ -127,12 +118,6 @@ impl Player {
         let drag = 700.0;
 
         self.update_crazy_dash_status();
-
-        // if we've been crazy dashing for too long (its ending), then switch
-        // our crazy dashing status.
-        if (get_time() - self.ticks_since_crazy_dash > 0.3) {
-            self.is_crazy_dashing = false;
-        }
 
         // apply drag to car when velocity > 0
         if self.velocity.y > 0.0 {
@@ -225,27 +210,30 @@ impl Player {
     }
 
     fn update_crazy_dash_status(&mut self) {
-        // update our crazy dash status; gas function will obtain status of
-        // crazy dash from state of object.
-        if get_time() - self.ticks_since_gas_was_activated > 1.0 {
+        // If its time to end the crazy dash, end it and return early.
+        if self.ticks_to_curr_crazy_dash_end > 0.0 && get_time() > self.ticks_to_curr_crazy_dash_end
+        {
             self.is_crazy_dashing = false;
+            self.ticks_to_curr_crazy_dash_end = -1.0;
             return;
         }
 
         let time_between_drive_and_gas =
             self.ticks_since_gas_was_activated - self.ticks_since_switching_into_drive;
-
+        // Just for debug view
         self.time_between_drive_and_gas = time_between_drive_and_gas;
 
-        let activate_crazy_dash = (0.04..0.08).contains(&time_between_drive_and_gas);
-        let are_mid_crazy_dash =
-            self.ticks_since_crazy_dash != 0.0 && self.ticks_since_crazy_dash < 1.0;
+        let activate_crazy_dash = (0.02..0.5).contains(&time_between_drive_and_gas);
 
-        if activate_crazy_dash || are_mid_crazy_dash {
+        if self.is_crazy_dashing || activate_crazy_dash {
             if activate_crazy_dash {
-                self.ticks_since_crazy_dash = get_time();
+                self.ticks_to_curr_crazy_dash_end = get_time() + CRAZY_DASH_LENGTH;
+                self.ticks_since_gas_was_activated = -1.0;
+                self.ticks_since_switching_into_drive = -1.0;
             }
             self.is_crazy_dashing = true;
+        } else {
+            self.is_crazy_dashing = false;
         }
     }
 }

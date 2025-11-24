@@ -151,8 +151,8 @@ fn render_debug_info(game_state: &GameState, camera: &Rect, debug_renderer: &mut
     ));
 
     debug_renderer.add_text(&format!(
-        "crazy_dash_activated_ticks: {}",
-        game_state.player.ticks_since_crazy_dash
+        "crazy dash end time: {}",
+        game_state.player.ticks_to_curr_crazy_dash_end
     ));
 
     debug_renderer.add_text(&format!(

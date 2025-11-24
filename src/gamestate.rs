@@ -1,6 +1,7 @@
 use crate::constants::CAMERA_SPEED;
 use crate::input::InputFrame;
-use crate::player::*;
+use crate::player::Player;
+use crate::player::PlayerAction;
 use macroquad::math::Rect;
 use macroquad::time::get_time;
 
