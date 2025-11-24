@@ -118,8 +118,10 @@ impl Player {
     pub fn simulate(&mut self, delta_time: f32) {
         self.update_crazy_dash_status();
 
-        let drag = CAR_DRAG;
-        if self.is_crazy_dashing {}
+        let mut drag = CAR_DRAG;
+        if self.is_crazy_dashing {
+            drag = CRAZY_DASH_DRAG;
+        }
 
         // apply drag to car when velocity > 0
         if self.velocity.y > 0.0 {

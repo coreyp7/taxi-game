@@ -11,12 +11,12 @@ pub const PLAYER_MAX_REVERSE_VELOCITY: f32 = -350.0;
 pub const PLAYER_ROTATION_SPEED: f32 = 125.0;
 
 pub const CAR_DRAG: f32 = 500.0;
-//pub const CRAZY_DASH_DRAG: f32 = 600.0;
+pub const CRAZY_DASH_DRAG: f32 = 350.0;
 
 //pub const CAMERA_SPEED: f32 = 2.5;
 pub const CAMERA_SPEED: f32 = 7.5;
 
-/// Will render debug info if true.
+/// Will render debug info if true (includes grid right now)
 pub const IS_DEBUG: bool = true;
 
 // this is extra but was trying to improve the function where vertices are created
