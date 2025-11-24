@@ -20,22 +20,23 @@ impl InputFrame {
 pub fn process_inputs(input_frame: &mut InputFrame) {
     input_frame.player_actions.clear();
 
-    if is_key_down(KeyCode::Up) {
-        input_frame.player_actions.push(PlayerAction::DriveForward);
+    // Define key mappings
+    let key_mappings = [
+        (KeyCode::Up, PlayerAction::ShiftIntoDrive),
+        (KeyCode::Down, PlayerAction::ShiftIntoReverse),
+        (KeyCode::Space, PlayerAction::Gas),
+        (KeyCode::Left, PlayerAction::TurnLeft),
+        (KeyCode::Right, PlayerAction::TurnRight),
+    ];
+
+    // Process keyboard inputs
+    for (key, action) in key_mappings {
+        if is_key_down(key) {
+            input_frame.player_actions.push(action);
+        }
     }
 
-    if is_key_down(KeyCode::Down) {
-        input_frame.player_actions.push(PlayerAction::DriveBackward);
-    }
-
-    if is_key_down(KeyCode::Left) {
-        input_frame.player_actions.push(PlayerAction::TurnLeft);
-    }
-
-    if is_key_down(KeyCode::Right) {
-        input_frame.player_actions.push(PlayerAction::TurnRight);
-    }
-
+    // Handle mouse input separately since it has parameters
     if is_mouse_button_pressed(MouseButton::Left) {
         let (mouse_x, mouse_y) = mouse_position();
         input_frame

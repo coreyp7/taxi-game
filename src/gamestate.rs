@@ -27,11 +27,20 @@ pub fn simulate(
 fn simulate_player(input_frame: &InputFrame, game_state: &mut GameState, delta_time: f32) {
     for player_action in input_frame.player_actions.iter() {
         match player_action {
-            PlayerAction::DriveForward => {
-                game_state.player.step_on_gas(delta_time);
+            //PlayerAction::Gas | PlayerAction::ShiftIntoDrive => {
+            //game_state.player.step_on_gas(delta_time);
+            //}
+            //PlayerAction::ShiftIntoReverse => {
+            //game_state.player.step_on_brake(delta_time);
+            //}
+            PlayerAction::Gas => {
+                game_state.player.is_gas_pressed = true;
             }
-            PlayerAction::DriveBackward => {
-                game_state.player.step_on_brake(delta_time);
+            PlayerAction::ShiftIntoDrive => {
+                game_state.player.shift_into_drive();
+            }
+            PlayerAction::ShiftIntoReverse => {
+                game_state.player.shift_into_reverse();
             }
             PlayerAction::TurnLeft => game_state.player.rotate(PlayerAction::TurnLeft, delta_time),
             PlayerAction::TurnRight => game_state

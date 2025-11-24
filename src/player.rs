@@ -19,6 +19,15 @@ pub struct Player {
     pub forward_normal: Point,
 
     pub velocity: Point,
+
+    pub shift_mode: ShiftMode,
+
+    pub is_gas_pressed: bool,
+}
+
+enum ShiftMode {
+    DRIVE,
+    REVERSE,
 }
 
 impl Player {
@@ -34,6 +43,8 @@ impl Player {
             forward_normal,
             rotation: 0.0,
             velocity,
+            shift_mode: ShiftMode::DRIVE,
+            is_gas_pressed: false,
         }
     }
 
@@ -56,35 +67,46 @@ impl Player {
         }
     }
 
-    pub fn translate(&mut self, x: f32, y: f32) {
-        self.center.x += x;
-        self.center.y += y;
+    //pub fn step_on_gas(&mut self, delta_time: f32) {
+    ////self.velocity.y += 10.0;
+    ////self.velocity.x += 10.0;
+    //if self.velocity.y < PLAYER_MAX_VELOCITY {
+    //self.velocity.y += GAS_VELOCITY;
+    //}
+    //if self.velocity.x < PLAYER_MAX_VELOCITY {
+    //self.velocity.x += GAS_VELOCITY;
+    //}
+    //}
 
-        for point in &mut self.points {
-            point.x += x;
-            point.y += y;
-        }
-    }
+    //pub fn step_on_brake(&mut self, delta_time: f32) {
+    ////self.velocity.y += 10.0;
+    ////self.velocity.x += 10.0;
+    //if self.velocity.y > PLAYER_MAX_REVERSE_VELOCITY {
+    //self.velocity.y -= REVERSE_VELOCITY;
+    //}
+    //if self.velocity.x > PLAYER_MAX_REVERSE_VELOCITY {
+    //self.velocity.x -= REVERSE_VELOCITY;
+    //}
+    //}
 
-    pub fn step_on_gas(&mut self, delta_time: f32) {
-        //self.velocity.y += 10.0;
-        //self.velocity.x += 10.0;
-        if self.velocity.y < PLAYER_MAX_VELOCITY {
-            self.velocity.y += GAS_VELOCITY;
-        }
-        if self.velocity.x < PLAYER_MAX_VELOCITY {
-            self.velocity.x += GAS_VELOCITY;
-        }
-    }
-
-    pub fn step_on_brake(&mut self, delta_time: f32) {
-        //self.velocity.y += 10.0;
-        //self.velocity.x += 10.0;
-        if self.velocity.y > PLAYER_MAX_REVERSE_VELOCITY {
-            self.velocity.y -= REVERSE_VELOCITY;
-        }
-        if self.velocity.x > PLAYER_MAX_REVERSE_VELOCITY {
-            self.velocity.x -= REVERSE_VELOCITY;
+    pub fn apply_gas(&mut self) {
+        match self.shift_mode {
+            ShiftMode::DRIVE => {
+                if self.velocity.y < PLAYER_MAX_VELOCITY {
+                    self.velocity.y += GAS_VELOCITY;
+                }
+                if self.velocity.x < PLAYER_MAX_VELOCITY {
+                    self.velocity.x += GAS_VELOCITY;
+                }
+            }
+            ShiftMode::REVERSE => {
+                if self.velocity.y > PLAYER_MAX_REVERSE_VELOCITY {
+                    self.velocity.y -= REVERSE_VELOCITY;
+                }
+                if self.velocity.x > PLAYER_MAX_REVERSE_VELOCITY {
+                    self.velocity.x -= REVERSE_VELOCITY;
+                }
+            }
         }
     }
 
@@ -113,6 +135,11 @@ impl Player {
             self.velocity.x = 0.0;
         }
 
+        // Apply velocity if gas is held (either drive or reverse)
+        if self.is_gas_pressed {
+            self.apply_gas(); // TODO: this could be named better.
+        }
+
         // Apply the velocity to each of the verticies of the car
         // in the direction the car is facing (forward_normal).
         let dx = self.forward_normal.x * self.velocity.x;
@@ -127,6 +154,17 @@ impl Player {
             point.x += x_vel;
             point.y += y_vel;
         }
+
+        // this will be set to true again before simulate is ran in the next frame.
+        self.is_gas_pressed = false;
+    }
+
+    pub fn shift_into_drive(&mut self) {
+        self.shift_mode = ShiftMode::DRIVE;
+    }
+
+    pub fn shift_into_reverse(&mut self) {
+        self.shift_mode = ShiftMode::REVERSE;
     }
 
     //FIXME: this is broken rn. Transform x y from camera relative pos
@@ -147,6 +185,16 @@ impl Player {
             self.center.x + forward_vec.x * distance,
             self.center.y + forward_vec.y * distance,
         )
+    }
+
+    pub fn translate(&mut self, x: f32, y: f32) {
+        self.center.x += x;
+        self.center.y += y;
+
+        for point in &mut self.points {
+            point.x += x;
+            point.y += y;
+        }
     }
 }
 
@@ -193,8 +241,9 @@ fn create_player_vertices(center: &Point) -> [Point; 8] {
 
 #[derive(Debug, Clone)]
 pub enum PlayerAction {
-    DriveForward,
-    DriveBackward,
+    Gas,
+    ShiftIntoDrive,
+    ShiftIntoReverse,
     TurnLeft,
     TurnRight,
     Reposition(f32, f32),
