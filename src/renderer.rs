@@ -1,6 +1,6 @@
 use crate::constants::{
-    CAMERA_SPEED, CAR_DRAG, CRAZY_DASH_LENGTH, CRAZY_DASH_MAX_VELOCITY, CRAZY_DASH_VELOCITY,
-    GAS_VELOCITY, IS_DEBUG, PLAYER_MAX_REVERSE_VELOCITY, PLAYER_MAX_VELOCITY,
+    CAMERA_SPEED, CAR_DEFAULT_DRAG, CRAZY_DASH_LENGTH, CRAZY_DASH_MAX_VELOCITY,
+    CRAZY_DASH_VELOCITY, GAS_VELOCITY, IS_DEBUG, PLAYER_MAX_REVERSE_VELOCITY, PLAYER_MAX_VELOCITY,
     PLAYER_ROTATION_SPEED, REVERSE_VELOCITY,
 };
 use crate::debug::{DebugRenderer, render_grid};
@@ -33,13 +33,18 @@ fn render_player(player: &crate::player::Player, camera: &Rect) {
         let curr_vertex_camera_pos = convert_world_pos_to_camera_pos(&current, camera);
         let next_vertex_camera_pos = convert_world_pos_to_camera_pos(&next, camera);
 
+        let mut outline_color = YELLOW;
+        if player.is_crazy_dashing {
+            outline_color = BLUE;
+        }
+
         draw_line(
             curr_vertex_camera_pos.x,
             curr_vertex_camera_pos.y,
             next_vertex_camera_pos.x,
             next_vertex_camera_pos.y,
             2.0,
-            YELLOW,
+            outline_color,
         );
         draw_circle(curr_vertex_camera_pos.x, curr_vertex_camera_pos.y, 3.0, RED);
     }
@@ -140,7 +145,7 @@ fn render_debug_info(game_state: &GameState, camera: &Rect, debug_renderer: &mut
         PLAYER_MAX_REVERSE_VELOCITY
     ));
     debug_renderer.add_constant(&format!("ROTATION_SPEED: {}", PLAYER_ROTATION_SPEED));
-    debug_renderer.add_constant(&format!("CAR_DRAG: {}", CAR_DRAG));
+    debug_renderer.add_constant(&format!("CAR_DEFAULT_DRAG: {}", CAR_DEFAULT_DRAG));
     debug_renderer.add_constant(&format!("CAMERA_SPEED: {}", CAMERA_SPEED));
 
     debug_renderer.add_text(&format!(
@@ -161,7 +166,7 @@ fn render_debug_info(game_state: &GameState, camera: &Rect, debug_renderer: &mut
 
     debug_renderer.add_text(&format!(
         "ticks since switching to drive: {:.2}",
-        game_state.player.ticks_since_switching_into_drive.floor()
+        game_state.player.ticks_since_switching_into_drive
     ));
 
     debug_renderer.add_text(&format!(
@@ -183,6 +188,10 @@ fn render_debug_info(game_state: &GameState, camera: &Rect, debug_renderer: &mut
         "are we crazy dashing?: {}",
         game_state.player.is_crazy_dashing
     ));
+
+    debug_renderer.add_text(&format!("drag: {:.2}", game_state.player.drag));
+
+    debug_renderer.add_text(&format!("time: {:.2}", get_time()));
 
     // Crazy dash visual indicator - flashing blue square
     if game_state.player.is_crazy_dashing && debug_renderer.debug_state.show_crazy_dash_indicator {

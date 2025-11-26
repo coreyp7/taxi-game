@@ -12,8 +12,10 @@ pub const PLAYER_MAX_REVERSE_VELOCITY: f32 = -350.0;
 //pub const PLAYER_ROTATION_SPEED: f32 = 125.0;
 pub const PLAYER_ROTATION_SPEED: f32 = 10.0;
 
-pub const CAR_DRAG: f32 = 500.0;
-pub const CRAZY_DASH_DRAG: f32 = 350.0;
+pub const CAR_DEFAULT_DRAG: f32 = 500.0;
+//pub const CRAZY_DASH_DRAG: f32 = 5.0;
+pub const CRAZY_DASH_DRAG: f32 = 50.0;
+pub const CRAZY_DASH_INPUT_TIMING: std::ops::Range<f64> = (0.04..0.09);
 
 //pub const CAMERA_SPEED: f32 = 2.5;
 pub const CAMERA_SPEED: f32 = 7.5;

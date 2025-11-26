@@ -34,6 +34,8 @@ pub struct Player {
     pub time_between_drive_and_gas: f64,
 
     pub is_crazy_dashing: bool,
+
+    pub drag: f32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -62,12 +64,13 @@ impl Player {
             ticks_to_curr_crazy_dash_end: 0.0,
             time_between_drive_and_gas: 0.0,
             is_crazy_dashing: false,
+            drag: CAR_DEFAULT_DRAG,
         }
     }
 
     fn is_player_moving(&self) -> bool {
-        let is_x_vel = self.velocity.x > 0.0 || self.velocity.x < 0.0;
-        let is_y_vel = self.velocity.y > 0.0 || self.velocity.y < 0.0;
+        let is_x_vel = self.velocity.x.abs() > 0.0;
+        let is_y_vel = self.velocity.y.abs() > 0.0;
         is_x_vel && is_y_vel
     }
 
@@ -137,32 +140,41 @@ impl Player {
     pub fn simulate(&mut self, delta_time: f32) {
         self.update_crazy_dash_status();
 
-        let mut drag = CAR_DRAG;
+        //let mut drag = CAR_DEFAULT_DRAG;
         if self.is_crazy_dashing {
-            drag = CRAZY_DASH_DRAG;
+            self.drag = CRAZY_DASH_DRAG;
         }
 
         // apply drag to car when velocity > 0
         if self.velocity.y > 0.0 {
-            self.velocity.y -= drag * delta_time;
+            self.velocity.y -= self.drag * delta_time;
         } else if self.velocity.y < 0.0 {
-            self.velocity.y += drag * delta_time;
+            self.velocity.y += self.drag * delta_time;
         }
 
         if self.velocity.x > 0.0 {
-            self.velocity.x -= drag * delta_time;
+            self.velocity.x -= self.drag * delta_time;
         } else if self.velocity.x < 0.0 {
-            self.velocity.x += drag * delta_time;
+            self.velocity.x += self.drag * delta_time;
+        }
+
+        // Begin increasing the drag if less than the default (mid crazy dash).
+        // (without this, the car very quickly slows down after a crazy dash)
+        if self.drag < CAR_DEFAULT_DRAG {
+            let mut new_drag = 1000.0 / self.velocity.y; // TODO: put in function
+
+            if new_drag < 0.0 {
+                new_drag = 0.1;
+            }
+
+            self.drag += new_drag;
+            if self.drag > CAR_DEFAULT_DRAG {
+                self.drag = CAR_DEFAULT_DRAG;
+            }
         }
 
         // If velocity is near 0, just set to 0.
         // (Prevents buggy behavior at lower speeds)
-        //if self.velocity.y.abs() < 5.0 {
-        //self.velocity.y = 0.0;
-        //}
-        //if self.velocity.x.abs() < 5.0 {
-        //self.velocity.x = 0.0;
-        //}
         if self.velocity.y.abs() < 2.5 {
             self.velocity.y = 0.0;
         }
@@ -249,10 +261,11 @@ impl Player {
 
         let time_between_drive_and_gas =
             self.ticks_since_gas_was_activated - self.ticks_since_switching_into_drive;
-        // Just for debug view
-        self.time_between_drive_and_gas = time_between_drive_and_gas;
 
-        let activate_crazy_dash = (0.02..0.5).contains(&time_between_drive_and_gas);
+        self.time_between_drive_and_gas = time_between_drive_and_gas; // Just for debug view
+
+        //let activate_crazy_dash = (0.02..0.5).contains(&time_between_drive_and_gas);
+        let activate_crazy_dash = CRAZY_DASH_INPUT_TIMING.contains(&time_between_drive_and_gas);
 
         if self.is_crazy_dashing || activate_crazy_dash {
             if activate_crazy_dash {
