@@ -8,7 +8,9 @@ pub const CRAZY_DASH_MAX_VELOCITY: f32 = 2300.0;
 pub const PLAYER_MAX_VELOCITY: f32 = 750.0;
 //pub const PLAYER_MAX_VELOCITY: f32 = 500.0;
 pub const PLAYER_MAX_REVERSE_VELOCITY: f32 = -350.0;
-pub const PLAYER_ROTATION_SPEED: f32 = 125.0;
+// Old rotation before improving turn behavior to be slower if not moving fast.
+//pub const PLAYER_ROTATION_SPEED: f32 = 125.0;
+pub const PLAYER_ROTATION_SPEED: f32 = 10.0;
 
 pub const CAR_DRAG: f32 = 500.0;
 pub const CRAZY_DASH_DRAG: f32 = 350.0;

@@ -65,11 +65,30 @@ impl Player {
         }
     }
 
+    fn is_player_moving(&self) -> bool {
+        let is_x_vel = self.velocity.x > 0.0 || self.velocity.x < 0.0;
+        let is_y_vel = self.velocity.y > 0.0 || self.velocity.y < 0.0;
+        is_x_vel && is_y_vel
+    }
+
     pub fn rotate(&mut self, player_action: PlayerAction, delta_time: f32) {
+        if !self.is_player_moving() {
+            return;
+        }
+
         let mut rotation_degrees = 0.0;
+
+        // Allow sharper turn if we're moving faster.
+        // So, multiply the rotation speed with velocity in some way.
+        let turn_velocity_modifier = self.velocity.y / 100.0;
+
         match player_action {
-            PlayerAction::TurnLeft => rotation_degrees = -PLAYER_ROTATION_SPEED * delta_time,
-            PlayerAction::TurnRight => rotation_degrees = PLAYER_ROTATION_SPEED * delta_time,
+            PlayerAction::TurnLeft => {
+                rotation_degrees = -PLAYER_ROTATION_SPEED * turn_velocity_modifier * delta_time
+            }
+            PlayerAction::TurnRight => {
+                rotation_degrees = PLAYER_ROTATION_SPEED * turn_velocity_modifier * delta_time
+            }
             _ => (), // shouldn't happen
         }
         let rotation_radians = rotation_degrees * PI / 180.0;
