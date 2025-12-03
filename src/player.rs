@@ -85,6 +85,16 @@ impl Player {
         // So, multiply the rotation speed with velocity in some way.
         let turn_velocity_modifier = self.velocity.y / 100.0;
 
+        /*
+         * TODO: outlining how we're gonna implement rotation of car during drifting.
+         *
+         * May want a new flag that indicates if we're "drifting".
+         * Then have some sort of logic that'll rotate the car to be somewhat perpendicular
+         * of the velocity direction.
+         * How will there be control of it by the player? Not sure, but maybe implement
+         * naive functionality first before worrying about further behavior.
+         */
+
         match player_action {
             PlayerAction::TurnLeft => {
                 rotation_degrees = -PLAYER_ROTATION_SPEED * turn_velocity_modifier * delta_time

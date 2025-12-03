@@ -2,16 +2,21 @@ use crate::constants::CAMERA_SPEED;
 use crate::input::InputFrame;
 use crate::player::Player;
 use crate::player::PlayerAction;
+use crate::wall::Wall;
 use macroquad::math::Rect;
 use macroquad::time::get_time;
 
 pub struct GameState {
     pub player: Player,
+    pub wall: Wall // FIXME: temp lazy impl
 }
 
 impl GameState {
     pub fn new(player: Player) -> Self {
-        Self { player }
+        // for testing
+        let wall: Wall = Wall::new(player.center.x, player.center.y + 300.0);
+
+        Self { player, wall }
     }
 }
 

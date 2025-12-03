@@ -8,6 +8,7 @@ mod input;
 mod math;
 mod player;
 mod renderer;
+mod wall;
 
 use debug::DebugRenderer;
 use gamestate::simulate;
@@ -15,6 +16,7 @@ use gamestate::*;
 use input::*;
 use player::Player;
 use renderer::render;
+use wall::Wall;
 
 fn window_conf() -> Conf {
     Conf {
@@ -22,7 +24,7 @@ fn window_conf() -> Conf {
         //window_width: 1920,
         //window_height: 1080,
         //window_resizable: false,
-        fullscreen: true,
+        fullscreen: false,
         ..Default::default()
     }
 }

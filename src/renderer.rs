@@ -18,6 +18,7 @@ pub fn render(game_state: &GameState, camera: &Rect, debug_renderer: &mut DebugR
     }
 
     render_player(&game_state.player, camera);
+    render_wall(&game_state.wall, camera);
     render_ui(game_state);
 
     if IS_DEBUG {
@@ -69,6 +70,35 @@ fn render_player(player: &crate::player::Player, camera: &Rect) {
         GREEN,
     );
     draw_circle(player_normal.x, player_normal.y, 5.0, GREEN);
+}
+
+fn render_wall(wall: &crate::wall::Wall, camera: &Rect) {
+    for i in 0..wall.points.len() {
+        let current = wall.points[i];
+        let next = wall.points[(i + 1) % wall.points.len()]; // Wrap around to first point
+
+        let curr_vertex_camera_pos = convert_world_pos_to_camera_pos(&current, camera);
+        let next_vertex_camera_pos = convert_world_pos_to_camera_pos(&next, camera);
+
+        draw_line(
+            curr_vertex_camera_pos.x,
+            curr_vertex_camera_pos.y,
+            next_vertex_camera_pos.x,
+            next_vertex_camera_pos.y,
+            3.0,
+            WHITE,
+        );
+
+        draw_circle(curr_vertex_camera_pos.x, curr_vertex_camera_pos.y, 4.0, PURPLE);
+    }
+
+    let wall_center_camera_pos = convert_world_pos_to_camera_pos(&wall.center, camera);
+    draw_circle(
+        wall_center_camera_pos.x,
+        wall_center_camera_pos.y,
+        5.0,
+        ORANGE,
+    );
 }
 
 fn render_ui(game_state: &GameState) {
