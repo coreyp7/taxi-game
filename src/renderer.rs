@@ -6,7 +6,7 @@ use crate::constants::{
 use crate::debug::{DebugRenderer, render_grid};
 use crate::gamestate::GameState;
 use crate::math::convert_world_pos_to_camera_pos;
-use crate::player::ShiftMode;
+use crate::player::PlayerState;
 use macroquad::prelude::*;
 
 pub fn render(game_state: &GameState, camera: &Rect, debug_renderer: &mut DebugRenderer) {
@@ -35,7 +35,7 @@ fn render_player(player: &crate::player::Player, camera: &Rect) {
         let next_vertex_camera_pos = convert_world_pos_to_camera_pos(&next, camera);
 
         let mut outline_color = YELLOW;
-        if player.is_crazy_dashing {
+        if player.state == PlayerState::CrazyDashing {
             outline_color = BLUE;
         }
 
@@ -89,7 +89,12 @@ fn render_wall(wall: &crate::wall::Wall, camera: &Rect) {
             WHITE,
         );
 
-        draw_circle(curr_vertex_camera_pos.x, curr_vertex_camera_pos.y, 4.0, PURPLE);
+        draw_circle(
+            curr_vertex_camera_pos.x,
+            curr_vertex_camera_pos.y,
+            4.0,
+            PURPLE,
+        );
     }
 
     let wall_center_camera_pos = convert_world_pos_to_camera_pos(&wall.center, camera);
@@ -123,16 +128,22 @@ fn render_gear_indicator(game_state: &GameState) {
     let base_x = screen_width - indicator_size - margin;
     let base_y = screen_height - (indicator_size * 2.0) - margin;
 
-    let shift_mode = game_state.player.shift_mode;
+    use crate::player::PlayerState;
+    let player_state = &game_state.player.state;
 
-    let drive_color = match shift_mode {
-        ShiftMode::DRIVE => Color::new(0.0, 0.8, 0.0, 1.0), // Bright green when active
-        ShiftMode::REVERSE => Color::new(0.0, 0.4, 0.0, 1.0), // Dark green when inactive
-    };
-
-    let reverse_color = match shift_mode {
-        ShiftMode::REVERSE => Color::new(1.0, 0.0, 0.0, 1.0), // Bright red when active
-        ShiftMode::DRIVE => Color::new(0.4, 0.0, 0.0, 1.0),   // Dark red when inactive
+    let (drive_color, reverse_color) = match player_state {
+        PlayerState::Driving | PlayerState::CrazyDashing => (
+            Color::new(0.0, 0.8, 0.0, 1.0), // Bright green for drive
+            Color::new(0.4, 0.0, 0.0, 1.0), // Dark red for reverse
+        ),
+        PlayerState::Reversing => (
+            Color::new(0.0, 0.4, 0.0, 1.0), // Dark green for drive
+            Color::new(1.0, 0.0, 0.0, 1.0), // Bright red for reverse
+        ),
+        PlayerState::Drifting | PlayerState::SidewaysDrifting => (
+            Color::new(0.2, 0.2, 0.2, 1.0), // Neutral gray for both
+            Color::new(0.2, 0.2, 0.2, 1.0),
+        ),
     };
 
     draw_rectangle(base_x, base_y, indicator_size, indicator_size, drive_color);
@@ -214,17 +225,16 @@ fn render_debug_info(game_state: &GameState, camera: &Rect, debug_renderer: &mut
         game_state.player.time_between_drive_and_gas
     ));
 
-    debug_renderer.add_text(&format!(
-        "are we crazy dashing?: {}",
-        game_state.player.is_crazy_dashing
-    ));
+    debug_renderer.add_text(&format!("state: {:#?}", game_state.player.state));
 
     debug_renderer.add_text(&format!("drag: {:.2}", game_state.player.drag));
 
     debug_renderer.add_text(&format!("time: {:.2}", get_time()));
 
     // Crazy dash visual indicator - flashing blue square
-    if game_state.player.is_crazy_dashing && debug_renderer.debug_state.show_crazy_dash_indicator {
+    if game_state.player.state == PlayerState::CrazyDashing
+        && debug_renderer.debug_state.show_crazy_dash_indicator
+    {
         //let flash_intensity = ((get_time() * 10.0).sin() * 0.5 + 0.5) as f32; // Flash between 0 and 1
         let blue_color = Color::new(0.0, 0.5, 1.0, 1.0);
 

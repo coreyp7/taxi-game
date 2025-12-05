@@ -21,7 +21,7 @@ pub struct Player {
 
     pub velocity: Point,
 
-    pub shift_mode: ShiftMode,
+    pub state: PlayerState,
 
     pub is_gas_held: bool,
 
@@ -33,15 +33,17 @@ pub struct Player {
 
     pub time_between_drive_and_gas: f64,
 
-    pub is_crazy_dashing: bool,
-
     pub drag: f32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum ShiftMode {
-    DRIVE,
-    REVERSE,
+pub enum PlayerState {
+    Driving,
+    Reversing,
+    CrazyDashing,
+    // stubs for now
+    Drifting,
+    SidewaysDrifting,
 }
 
 impl Player {
@@ -50,20 +52,18 @@ impl Player {
         let points = create_player_vertices(&center);
         let forward_normal = Point::new(0.0, -1.0);
         let velocity = Point::new(0.0, 0.0);
-
         Player {
             points,
             center,
             forward_normal,
             rotation: 0.0,
             velocity,
-            shift_mode: ShiftMode::DRIVE,
+            state: PlayerState::Driving,
             is_gas_held: false,
             ticks_since_switching_into_drive: 0.0,
             ticks_since_gas_was_activated: 0.0,
             ticks_to_curr_crazy_dash_end: 0.0,
             time_between_drive_and_gas: 0.0,
-            is_crazy_dashing: false,
             drag: CAR_DEFAULT_DRAG,
         }
     }
@@ -117,18 +117,15 @@ impl Player {
     }
 
     pub fn apply_gas(&mut self) {
-        // If mid crazy dash, apply velocity with no limits.
-        if self.is_crazy_dashing && self.velocity.y < CRAZY_DASH_MAX_VELOCITY {
-            //self.velocity.x += GAS_VELOCITY;
-            //self.velocity.y += GAS_VELOCITY;
-
-            self.velocity.x += CRAZY_DASH_VELOCITY;
-            self.velocity.y += CRAZY_DASH_VELOCITY;
-            return;
-        }
-        self.is_crazy_dashing = false;
-        match self.shift_mode {
-            ShiftMode::DRIVE => {
+        match self.state {
+            PlayerState::CrazyDashing => {
+                if self.velocity.y < CRAZY_DASH_MAX_VELOCITY {
+                    self.velocity.x += CRAZY_DASH_VELOCITY;
+                    self.velocity.y += CRAZY_DASH_VELOCITY;
+                }
+                return;
+            }
+            PlayerState::Driving => {
                 if self.velocity.y < PLAYER_MAX_VELOCITY {
                     self.velocity.y += GAS_VELOCITY;
                 }
@@ -136,7 +133,7 @@ impl Player {
                     self.velocity.x += GAS_VELOCITY;
                 }
             }
-            ShiftMode::REVERSE => {
+            PlayerState::Reversing => {
                 if self.velocity.y > PLAYER_MAX_REVERSE_VELOCITY {
                     self.velocity.y -= REVERSE_VELOCITY;
                 }
@@ -144,14 +141,18 @@ impl Player {
                     self.velocity.x -= REVERSE_VELOCITY;
                 }
             }
+            PlayerState::Drifting | PlayerState::SidewaysDrifting => {
+                // stub for now
+            }
         }
     }
 
     pub fn simulate(&mut self, delta_time: f32) {
-        self.update_crazy_dash_status();
+        self.update_state();
 
-        //let mut drag = CAR_DEFAULT_DRAG;
-        if self.is_crazy_dashing {
+        // IMPROVE: this is a little trash doing this out here.
+        // Could be better in its own function.
+        if let PlayerState::CrazyDashing = self.state {
             self.drag = CRAZY_DASH_DRAG;
         }
 
@@ -217,17 +218,19 @@ impl Player {
     }
 
     pub fn shift_into_drive(&mut self) {
-        if self.shift_mode == ShiftMode::REVERSE {
-            // delimiter cut; mark the time of the switch for use to detect
-            // crazy dashes.
-            self.ticks_since_switching_into_drive = get_time();
+        match self.state {
+            PlayerState::Reversing => {
+                // delimiter cut; mark the time of the switch for use to detect
+                // crazy dashes.
+                self.ticks_since_switching_into_drive = get_time();
+            }
+            _ => {}
         }
-
-        self.shift_mode = ShiftMode::DRIVE;
+        self.state = PlayerState::Driving;
     }
 
     pub fn shift_into_reverse(&mut self) {
-        self.shift_mode = ShiftMode::REVERSE;
+        self.state = PlayerState::Reversing;
     }
 
     //FIXME: this is broken rn. Transform x y from camera relative pos
@@ -250,6 +253,7 @@ impl Player {
         )
     }
 
+    // leaving here for convenience if i need it in other polygons.
     pub fn translate(&mut self, x: f32, y: f32) {
         self.center.x += x;
         self.center.y += y;
@@ -260,32 +264,33 @@ impl Player {
         }
     }
 
-    fn update_crazy_dash_status(&mut self) {
-        // If its time to end the crazy dash, end it and return early.
-        if self.ticks_to_curr_crazy_dash_end > 0.0 && get_time() > self.ticks_to_curr_crazy_dash_end
-        {
-            self.is_crazy_dashing = false;
-            self.ticks_to_curr_crazy_dash_end = -1.0;
-            return;
+    /// Handles crazy dash timing stuff and state transitions
+    /// IMPROVE: could put all the fields for crazy dash stuff into a struct or something.
+    /// Could make it more organized and separated.
+    fn update_state(&mut self) {
+        // Check if the crazy dash is over now,
+        // and change the player state if it is over.
+        if PlayerState::CrazyDashing == self.state {
+            if self.ticks_to_curr_crazy_dash_end > 0.0
+                && get_time() > self.ticks_to_curr_crazy_dash_end
+            {
+                self.state = PlayerState::Driving;
+                self.ticks_to_curr_crazy_dash_end = -1.0;
+                return;
+            }
         }
-
         let time_between_drive_and_gas =
             self.ticks_since_gas_was_activated - self.ticks_since_switching_into_drive;
 
-        self.time_between_drive_and_gas = time_between_drive_and_gas; // Just for debug view
+        // This local var is just for debug display
+        self.time_between_drive_and_gas = time_between_drive_and_gas;
 
-        //let activate_crazy_dash = (0.02..0.5).contains(&time_between_drive_and_gas);
         let activate_crazy_dash = CRAZY_DASH_INPUT_TIMING.contains(&time_between_drive_and_gas);
-
-        if self.is_crazy_dashing || activate_crazy_dash {
-            if activate_crazy_dash {
-                self.ticks_to_curr_crazy_dash_end = get_time() + CRAZY_DASH_LENGTH;
-                self.ticks_since_gas_was_activated = -1.0;
-                self.ticks_since_switching_into_drive = -1.0;
-            }
-            self.is_crazy_dashing = true;
-        } else {
-            self.is_crazy_dashing = false;
+        if activate_crazy_dash {
+            self.ticks_to_curr_crazy_dash_end = get_time() + CRAZY_DASH_LENGTH;
+            self.ticks_since_gas_was_activated = -1.0;
+            self.ticks_since_switching_into_drive = -1.0;
+            self.state = PlayerState::CrazyDashing;
         }
     }
 }
