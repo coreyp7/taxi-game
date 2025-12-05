@@ -2,6 +2,7 @@ use crate::constants::*;
 use crate::math::Point;
 use crate::math::rotate_around_point;
 use macroquad::time::get_time;
+use std::collections::VecDeque;
 use std::f32::consts::PI;
 
 /// Aka the taxi
@@ -22,6 +23,8 @@ pub struct Player {
     pub velocity: Point,
 
     pub state: PlayerState,
+
+    pub state_history: VecDeque<(PlayerState, f32)>, // (state, timestamp)
 
     pub is_gas_held: bool,
 
@@ -59,6 +62,7 @@ impl Player {
             rotation: 0.0,
             velocity,
             state: PlayerState::Driving,
+            state_history: VecDeque::with_capacity(20),
             is_gas_held: false,
             ticks_since_switching_into_drive: 0.0,
             ticks_since_gas_was_activated: 0.0,
@@ -218,6 +222,10 @@ impl Player {
     }
 
     pub fn shift_into_drive(&mut self) {
+        if self.state == PlayerState::Driving {
+            return;
+        }
+
         match self.state {
             PlayerState::Reversing => {
                 // delimiter cut; mark the time of the switch for use to detect
@@ -227,10 +235,15 @@ impl Player {
             _ => {}
         }
         self.state = PlayerState::Driving;
+        self.push_state_history();
     }
 
     pub fn shift_into_reverse(&mut self) {
+        if self.state == PlayerState::Reversing {
+            return;
+        }
         self.state = PlayerState::Reversing;
+        self.push_state_history();
     }
 
     //FIXME: this is broken rn. Transform x y from camera relative pos
@@ -275,6 +288,7 @@ impl Player {
                 && get_time() > self.ticks_to_curr_crazy_dash_end
             {
                 self.state = PlayerState::Driving;
+                self.push_state_history();
                 self.ticks_to_curr_crazy_dash_end = -1.0;
                 return;
             }
@@ -291,6 +305,17 @@ impl Player {
             self.ticks_since_gas_was_activated = -1.0;
             self.ticks_since_switching_into_drive = -1.0;
             self.state = PlayerState::CrazyDashing;
+            self.push_state_history();
+        }
+    }
+
+    // TODO: change this to be passed the state, instead of ....
+    // or just rename this, I don't like the phrasing of it rn.
+    fn push_state_history(&mut self) {
+        self.state_history
+            .push_front((self.state, get_time() as f32));
+        if self.state_history.len() > 20 {
+            self.state_history.pop_back();
         }
     }
 }

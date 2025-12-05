@@ -9,6 +9,7 @@ pub struct DebugState {
     pub show_constants: bool,
     pub show_grid: bool,
     pub show_crazy_dash_indicator: bool,
+    pub show_state_history: bool,
 }
 
 impl DebugState {
@@ -18,6 +19,7 @@ impl DebugState {
             show_constants: true,
             show_grid: true,
             show_crazy_dash_indicator: true,
+            show_state_history: true,
         }
     }
 
@@ -35,6 +37,10 @@ impl DebugState {
 
     pub fn toggle_crazy_dash_indicator(&mut self) {
         self.show_crazy_dash_indicator = !self.show_crazy_dash_indicator;
+    }
+
+    pub fn toggle_state_history(&mut self) {
+        self.show_state_history = !self.show_state_history;
     }
 }
 
@@ -68,8 +74,8 @@ impl DebugRenderer {
             x: 20.0,
             color: GREEN,
             current_constant_line: 0,
-            constant_font_size: 20.0,
-            constant_line_height: 18.0,
+            constant_font_size: 15.0,
+            constant_line_height: 13.5,
             constant_start_y: 10.0,
             constant_color: YELLOW,
         }
@@ -133,6 +139,35 @@ impl DebugRenderer {
             self.constant_color,
         );
         self.current_constant_line += 1;
+    }
+
+    pub fn add_state_history_text(&mut self, text: &str) {
+        if !self.debug_state.show_state_history {
+            return;
+        }
+        // Measure the text to get its actual width for proper right alignment
+        let text_dimensions = measure_text(text, None, self.constant_font_size as u16, 1.0);
+        let text_width = text_dimensions.width;
+        let right_margin = 20.0;
+        let x_pos = screen_width() - text_width - right_margin;
+        draw_text(
+            text,
+            x_pos,
+            self.constant_start_y + self.constant_line_height * self.current_constant_line as f32,
+            self.constant_font_size,
+            self.constant_color,
+        );
+        self.current_constant_line += 1;
+    }
+
+    pub fn display_state_history(&mut self, player: &crate::player::Player) {
+        if !self.debug_state.show_state_history {
+            return;
+        }
+        self.add_state_history_text("[5] Player State History (latest first):");
+        for (i, (state, timestamp)) in player.state_history.iter().enumerate() {
+            self.add_state_history_text(&format!("{}: {:?} @ {:.2}s", i + 1, state, timestamp));
+        }
     }
 }
 

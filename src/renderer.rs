@@ -175,6 +175,7 @@ fn render_debug_info(game_state: &GameState, camera: &Rect, debug_renderer: &mut
     debug_renderer.reset();
 
     // Add constants to top-right corner
+    debug_renderer.add_constant("[2] Constants");
     debug_renderer.add_constant(&format!("GAS_VELOCITY: {}", GAS_VELOCITY));
     debug_renderer.add_constant(&format!("CRAZY_DASH_VELOCITY: {}", CRAZY_DASH_VELOCITY));
     debug_renderer.add_constant(&format!("REVERSE_VELOCITY: {}", REVERSE_VELOCITY));
@@ -189,6 +190,7 @@ fn render_debug_info(game_state: &GameState, camera: &Rect, debug_renderer: &mut
     debug_renderer.add_constant(&format!("CAR_DEFAULT_DRAG: {}", CAR_DEFAULT_DRAG));
     debug_renderer.add_constant(&format!("CAMERA_SPEED: {}", CAMERA_SPEED));
 
+    debug_renderer.add_text("[1] Player Info");
     debug_renderer.add_text(&format!(
         "Player Center: ({:.1}, {:.1})",
         game_state.player.center.x, game_state.player.center.y
@@ -228,7 +230,6 @@ fn render_debug_info(game_state: &GameState, camera: &Rect, debug_renderer: &mut
     debug_renderer.add_text(&format!("state: {:#?}", game_state.player.state));
 
     debug_renderer.add_text(&format!("drag: {:.2}", game_state.player.drag));
-
     debug_renderer.add_text(&format!("time: {:.2}", get_time()));
 
     // Crazy dash visual indicator - flashing blue square
@@ -256,4 +257,6 @@ fn render_debug_info(game_state: &GameState, camera: &Rect, debug_renderer: &mut
             WHITE,
         );
     }
+
+    debug_renderer.display_state_history(&game_state.player); // [5] State History
 }

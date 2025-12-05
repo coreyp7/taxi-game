@@ -1,5 +1,5 @@
-use crate::player::PlayerAction;
 use crate::debug::DebugRenderer;
+use crate::player::PlayerAction;
 use macroquad::input::is_key_pressed;
 use macroquad::input::*;
 
@@ -9,6 +9,7 @@ pub enum DebugAction {
     ToggleConstants,
     ToggleGrid,
     ToggleCrazyDashIndicator,
+    ToggleStateHistory,
 }
 
 //use macroquad:#[derive(Debug, Clone)]
@@ -60,6 +61,7 @@ pub fn process_inputs(input_frame: &mut InputFrame) {
         (KeyCode::Key2, DebugAction::ToggleConstants),
         (KeyCode::Key3, DebugAction::ToggleCrazyDashIndicator),
         (KeyCode::Key4, DebugAction::ToggleGrid),
+        (KeyCode::Key5, DebugAction::ToggleStateHistory),
     ];
 
     for (key, action) in debug_key_mappings {
@@ -76,9 +78,8 @@ pub fn process_debug_inputs(input_frame: &InputFrame, debug_renderer: &mut Debug
             DebugAction::ToggleText => debug_renderer.toggle_text(),
             DebugAction::ToggleConstants => debug_renderer.toggle_constants(),
             DebugAction::ToggleGrid => debug_renderer.toggle_grid(),
-            DebugAction::ToggleCrazyDashIndicator => {
-                debug_renderer.toggle_crazy_dash_indicator()
-            }
+            DebugAction::ToggleCrazyDashIndicator => debug_renderer.toggle_crazy_dash_indicator(),
+            DebugAction::ToggleStateHistory => debug_renderer.debug_state.toggle_state_history(),
         }
     }
 }

@@ -8,7 +8,7 @@ use macroquad::time::get_time;
 
 pub struct GameState {
     pub player: Player,
-    pub wall: Wall // FIXME: temp lazy impl
+    pub wall: Wall, // FIXME: temp lazy impl
 }
 
 impl GameState {
