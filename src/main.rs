@@ -21,8 +21,8 @@ use wall::Wall;
 fn window_conf() -> Conf {
     Conf {
         window_title: "Taxi Game".to_owned(),
-        //window_width: 1920,
-        //window_height: 1080,
+        window_width: 1080,
+        window_height: 720,
         //window_resizable: false,
         fullscreen: false,
         ..Default::default()

@@ -30,6 +30,18 @@ impl InputFrame {
 // NOTE: this can be improved but leaving as is right now.
 // Need to improve the logic to be smart about what actions its adding to the
 // input frame (can't press left & right, etc.)
+fn prioritize_drive_shift(actions: &mut Vec<PlayerAction>) {
+    let has_drive = actions
+        .iter()
+        .any(|a| matches!(a, PlayerAction::ShiftIntoDrive));
+    let has_reverse = actions
+        .iter()
+        .any(|a| matches!(a, PlayerAction::ShiftIntoReverse));
+    if has_drive && has_reverse {
+        actions.retain(|a| !matches!(a, PlayerAction::ShiftIntoReverse));
+    }
+}
+
 pub fn process_inputs(input_frame: &mut InputFrame) {
     input_frame.player_actions.clear();
     input_frame.debug_actions.clear();
@@ -54,6 +66,9 @@ pub fn process_inputs(input_frame: &mut InputFrame) {
     if is_key_pressed(KeyCode::Space) {
         input_frame.player_actions.push(PlayerAction::GasActivated);
     }
+
+    // Prioritize drive shift
+    prioritize_drive_shift(&mut input_frame.player_actions);
 
     // convenient toggles for debug info
     let debug_key_mappings = [

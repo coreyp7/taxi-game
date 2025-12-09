@@ -36,6 +36,8 @@ pub struct Player {
 
     pub time_between_drive_and_gas: f64,
 
+    pub drift_start_time: f64,
+
     pub drag: f32,
 }
 
@@ -69,6 +71,7 @@ impl Player {
             ticks_to_curr_crazy_dash_end: 0.0,
             time_between_drive_and_gas: 0.0,
             drag: CAR_DEFAULT_DRAG,
+            drift_start_time: 0.0,
         }
     }
 
@@ -221,6 +224,12 @@ impl Player {
         self.is_gas_held = false;
     }
 
+    /// Sets the player state and pushes to state history
+    fn set_player_state(&mut self, new_state: PlayerState) {
+        self.state = new_state;
+        self.push_state_history();
+    }
+
     pub fn shift_into_drive(&mut self) {
         if self.state == PlayerState::Driving {
             return;
@@ -234,16 +243,14 @@ impl Player {
             }
             _ => {}
         }
-        self.state = PlayerState::Driving;
-        self.push_state_history();
+        self.set_player_state(PlayerState::Driving);
     }
 
     pub fn shift_into_reverse(&mut self) {
         if self.state == PlayerState::Reversing {
             return;
         }
-        self.state = PlayerState::Reversing;
-        self.push_state_history();
+        self.set_player_state(PlayerState::Reversing);
     }
 
     //FIXME: this is broken rn. Transform x y from camera relative pos
@@ -283,12 +290,14 @@ impl Player {
     fn update_state(&mut self) {
         // Check if the crazy dash is over now,
         // and change the player state if it is over.
-        if PlayerState::CrazyDashing == self.state {
+        if self.state == PlayerState::CrazyDashing {
+            let current_time = get_time();
             if self.ticks_to_curr_crazy_dash_end > 0.0
-                && get_time() > self.ticks_to_curr_crazy_dash_end
+                && current_time > self.ticks_to_curr_crazy_dash_end
             {
-                self.state = PlayerState::Driving;
-                self.push_state_history();
+                // TODO: should instead be set to whatever the current gear is, which
+                // should probably be tracked elsewhere.
+                self.set_player_state(PlayerState::Driving);
                 self.ticks_to_curr_crazy_dash_end = -1.0;
                 return;
             }
@@ -304,8 +313,25 @@ impl Player {
             self.ticks_to_curr_crazy_dash_end = get_time() + CRAZY_DASH_LENGTH;
             self.ticks_since_gas_was_activated = -1.0;
             self.ticks_since_switching_into_drive = -1.0;
-            self.state = PlayerState::CrazyDashing;
-            self.push_state_history();
+            self.set_player_state(PlayerState::CrazyDashing);
+        }
+
+        // Ignore doing logic for drifting if we're crazy dashing. Not allowed.
+        if self.state == PlayerState::CrazyDashing {
+            return;
+        }
+
+        // TODO: put all these into separate functions to distinguish when things
+        // are turned on.
+        if is_player_activating_drift(&self) {
+            self.set_player_state(PlayerState::Drifting);
+            self.drift_start_time = get_time();
+            return;
+        } else if get_time() - self.drift_start_time > PLAYER_DRIFT_LENGTH
+            && self.drift_start_time > 0.0
+        {
+            self.set_player_state(PlayerState::Driving);
+            self.drift_start_time = -1.0;
         }
     }
 
@@ -370,4 +396,47 @@ pub enum PlayerAction {
     TurnLeft,
     TurnRight,
     Reposition(f32, f32),
+}
+
+fn is_player_activating_drift(player: &Player) -> bool {
+    // need to check the og crazy taxi if this is true, but leaving for now
+    // for testing.
+    if !player.is_gas_held {
+        return false;
+    }
+
+    // Check if the last three actions were D > R > D
+    // and the time between them was pretty quick.
+    let action1 = player.state_history.get(0);
+    let action2 = player.state_history.get(1);
+    let action3 = player.state_history.get(2);
+
+    // when game starts, they won't even have enough actions to look at.
+    if action1.is_none() || action2.is_none() || action3.is_none() {
+        return false;
+    }
+
+    let drive_2 = action1.unwrap();
+    let reverse = action2.unwrap();
+    let drive_1 = action3.unwrap();
+
+    if drive_2.0 != PlayerState::Driving
+        && drive_1.0 != PlayerState::Driving
+        && reverse.0 != PlayerState::Reversing
+    {
+        // NOTE: there may be a better way to detect this, possibly with the
+        // specific inputs that are processed.
+        return false;
+    }
+
+    //if reverse.1 - drive_1.1 < 0.5 && drive_2.1 - reverse.1 < 0.5 {
+    //// this was fast enough; we're in drift
+    //return true;
+    //}
+
+    if drive_2.1 - drive_1.1 < PLAYER_DRIFT_TIMING {
+        return true;
+    }
+
+    false
 }
